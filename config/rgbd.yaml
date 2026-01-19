@@ -1,0 +1,60 @@
+%YAML:1.0
+File.version: "1.0"
+
+Camera.type: "PinHole"
+
+# Intrinsics (de /x500_depth_1/rgb/camera_info)
+Camera1.fx: 465.7411193847656
+Camera1.fy: 465.7411766052246
+Camera1.cx: 320.0
+Camera1.cy: 240.0
+
+# Distortion (0 en tu camera_info)
+Camera1.k1: 0.0
+Camera1.k2: 0.0
+Camera1.p1: 0.0
+Camera1.p2: 0.0
+Camera1.k3: 0.0
+
+Camera.width: 640
+Camera.height: 480
+# Camera.newWidth: 640
+# Camera.newHeight: 480
+
+# IMPORTANTE: entero (tu error anterior)
+Camera.fps: 30
+
+# Tu imagen llega como rgb8 -> RGB
+Camera.RGB: 0
+
+ThDepth: 40.0
+
+# Deptmap values factor 
+DepthMapFactor: 1.0 # 1.0 for ROS_bag
+
+# Requeridos por ORB-SLAM3 Settings incluso en RGB-D
+Stereo.ThDepth: 40.0
+Stereo.b: 0.07732
+
+# Depth float32 (32FC1) en metros -> 1.0
+RGBD.DepthMapFactor: 1.0
+
+# ORB defaults razonables
+ORBextractor.nFeatures: 1200
+ORBextractor.scaleFactor: 1.2
+ORBextractor.nLevels: 8
+ORBextractor.iniThFAST: 20
+ORBextractor.minThFAST: 7
+
+Viewer.KeyFrameSize: 0.05
+Viewer.KeyFrameLineWidth: 1.0
+Viewer.GraphLineWidth: 0.9
+Viewer.PointSize: 2.0
+Viewer.CameraSize: 0.08
+Viewer.CameraLineWidth: 3.0
+Viewer.ViewpointX: 0.0
+Viewer.ViewpointY: -0.7
+Viewer.ViewpointZ: -1.8
+Viewer.ViewpointF: 500.0
+
+System.SaveAtlasToFile: ./atlas
