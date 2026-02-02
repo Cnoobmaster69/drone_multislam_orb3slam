@@ -1,47 +1,47 @@
 
 - ros_topic_name: "/clock"
-  gz_topic_name: "/world/default/clock"
+  gz_topic_name: "/world/forest/clock"
   ros_type_name: "rosgraph_msgs/msg/Clock"
   gz_type_name: "gz.msgs.Clock"
   direction: GZ_TO_ROS
 
 # -------- RGB camera (IMX214) --------
-- ros_topic_name: "/x500_depth_1/rgb/image_raw"
-  gz_topic_name: "/world/default/model/x500_depth_1/link/camera_link/sensor/IMX214/image"
+- ros_topic_name: "/rgb/image_raw"
+  gz_topic_name: "/world/forest/model/x500_depth_1/link/camera_link/sensor/IMX214/image"
   ros_type_name: "sensor_msgs/msg/Image"
   gz_type_name: "gz.msgs.Image"
   direction: GZ_TO_ROS
 
-- ros_topic_name: "/x500_depth_1/rgb/camera_info"
-  gz_topic_name: "/world/default/model/x500_depth_1/link/camera_link/sensor/IMX214/camera_info"
-  ros_type_name: "sensor_msgs/msg/CameraInfo"
-  gz_type_name: "gz.msgs.CameraInfo"
-  direction: GZ_TO_ROS
+# - ros_topic_name: "/x500_depth_1/rgb/camera_info"
+#   gz_topic_name: "/world/default/model/x500_depth_1/link/camera_link/sensor/IMX214/camera_info"
+#   ros_type_name: "sensor_msgs/msg/CameraInfo"
+#   gz_type_name: "gz.msgs.CameraInfo"
+#   direction: GZ_TO_ROS
 
 # -------- Depth camera (StereoOV7251) --------
-- ros_topic_name: "/x500_depth_1/depth/image"
-  gz_topic_name: "/world/default/model/x500_depth_1/link/camera_link/sensor/StereoOV7251/depth_image"
+- ros_topic_name: "/depth/image"
+  gz_topic_name: "/world/forest/model/x500_depth_1/link/camera_link/sensor/StereoOV7251/depth_image"
   ros_type_name: "sensor_msgs/msg/Image"
   gz_type_name: "gz.msgs.Image"
   direction: GZ_TO_ROS
 
-- ros_topic_name: "/x500_depth_1/depth/camera_info"
-  gz_topic_name: "/world/default/model/x500_depth_1/link/camera_link/sensor/StereoOV7251/camera_info"
-  ros_type_name: "sensor_msgs/msg/CameraInfo"
-  gz_type_name: "gz.msgs.CameraInfo"
-  direction: GZ_TO_ROS
+# - ros_topic_name: "/x500_depth_1/depth/camera_info"
+#   gz_topic_name: "/world/default/model/x500_depth_1/link/camera_link/sensor/StereoOV7251/camera_info"
+#   ros_type_name: "sensor_msgs/msg/CameraInfo"
+#   gz_type_name: "gz.msgs.CameraInfo"
+#   direction: GZ_TO_ROS
 
-# PointCloud
-- ros_topic_name: "/x500_depth_1/depth/points"
-  gz_topic_name: "/world/default/model/x500_depth_1/link/camera_link/sensor/StereoOV7251/depth_image/points"
-  ros_type_name: "sensor_msgs/msg/PointCloud2"
-  gz_type_name: "gz.msgs.PointCloudPacked"
-  direction: GZ_TO_ROS
+# # PointCloud
+# - ros_topic_name: "/x500_depth_1/depth/points"
+#   gz_topic_name: "/world/default/model/x500_depth_1/link/camera_link/sensor/StereoOV7251/depth_image/points"
+#   ros_type_name: "sensor_msgs/msg/PointCloud2"
+#   gz_type_name: "gz.msgs.PointCloudPacked"
+#   direction: GZ_TO_ROS
 
-# -------- IMU --------
-- ros_topic_name: "/x500_depth_1/imu"
-  gz_topic_name: "/world/default/model/x500_depth_1/link/base_link/sensor/imu_sensor/imu"
-  ros_type_name: "sensor_msgs/msg/Imu"
-  gz_type_name: "gz.msgs.IMU"
-  direction: GZ_TO_ROS
+# # -------- IMU --------
+# - ros_topic_name: "/x500_depth_1/imu"
+#   gz_topic_name: "/world/default/model/x500_depth_1/link/base_link/sensor/imu_sensor/imu"
+#   ros_type_name: "sensor_msgs/msg/Imu"
+#   gz_type_name: "gz.msgs.IMU"
+#   direction: GZ_TO_ROS
 
