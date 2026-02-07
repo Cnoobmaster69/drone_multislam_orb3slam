@@ -1,0 +1,8 @@
+# This is for 3D Map stitching and this is not feature complete.
+
+float32 global_voxel_resolution 0.3
+float32 local_voxel_resolution 0.3
+float32 z_thresh_max 2.0 # points above this discarded
+bool get_grayscale True
+---
+bool response
