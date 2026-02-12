@@ -6,6 +6,7 @@
 # To help the search ORB_SLAM3_ROOT_DIR environment variable as the path to ORB_SLAM3 root folder
 #  e.g. `set( ORB_SLAM3_ROOT_DIR=~/ORB_SLAM3) `
 set(ORB_SLAM3_ROOT_DIR "~/ws_offboard_control/src/ORB_SLAM3")
+# set(ORB_SLAM3_ROOT_DIR "~/ws_offboard_control/src/covins/orb_slam3")
 # set(ORB_SLAM3_ROOT_DIR "~/ws_offboard_control/src/ros2_orb_slam3/orb_slam3")
 
 # message(${ORB_SLAM3_ROOT_DIR})
