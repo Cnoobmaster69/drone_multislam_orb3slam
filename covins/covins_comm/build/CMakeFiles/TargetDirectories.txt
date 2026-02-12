@@ -1,0 +1,7 @@
+/home/carlos/ws_offboard_control/src/covins/covins_comm/build/CMakeFiles/covins_comm.dir
+/home/carlos/ws_offboard_control/src/covins/covins_comm/build/CMakeFiles/edit_cache.dir
+/home/carlos/ws_offboard_control/src/covins/covins_comm/build/CMakeFiles/rebuild_cache.dir
+/home/carlos/ws_offboard_control/src/covins/covins_comm/build/CMakeFiles/list_install_components.dir
+/home/carlos/ws_offboard_control/src/covins/covins_comm/build/CMakeFiles/install.dir
+/home/carlos/ws_offboard_control/src/covins/covins_comm/build/CMakeFiles/install/local.dir
+/home/carlos/ws_offboard_control/src/covins/covins_comm/build/CMakeFiles/install/strip.dir

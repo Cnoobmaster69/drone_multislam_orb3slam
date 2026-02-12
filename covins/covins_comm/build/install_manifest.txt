@@ -1,0 +1,7 @@
+/home/carlos/.local/lib/libcovins_comm.so
+/home/carlos/.local/include/covins/covins_base/communicator_base.hpp
+/home/carlos/.local/include/covins/covins_base/msgs/msg_landmark.hpp
+/home/carlos/.local/include/covins/covins_base/msgs/msg_keyframe.hpp
+/home/carlos/.local/include/covins/covins_base/config_comm.hpp
+/home/carlos/.local/include/covins/covins_base/utils_base.hpp
+/home/carlos/.local/include/covins/covins_base/typedefs_base.hpp
