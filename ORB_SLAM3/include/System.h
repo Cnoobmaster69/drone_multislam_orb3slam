@@ -40,6 +40,8 @@
 #include "ImuTypes.h"
 #include "Settings.h"
 
+// COVINS
+#include "comm/communicator.hpp"
 
 namespace ORB_SLAM3
 {
@@ -227,6 +229,11 @@ private:
     // Loop Closer. It searches loops with every new keyframe. If there is a loop it performs
     // a pose graph optimization and full bundle adjustment (in a new thread) afterwards.
     LoopClosing* mpLoopCloser;
+
+#ifdef COVINS_MOD
+    std::shared_ptr<Communicator> comm_;
+    covins::TypeDefs::ThreadPtr thread_comm_;
+#endif
 
     // The viewer draws the map and the current camera pose. It uses Pangolin.
     Viewer* mpViewer;

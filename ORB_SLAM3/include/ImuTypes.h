@@ -34,6 +34,9 @@
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/vector.hpp>
 
+// COVINS
+#include <covins/covins_base/typedefs_base.hpp>
+
 namespace ORB_SLAM3
 {
 
@@ -182,6 +185,7 @@ public:
     void SetNewBias(const Bias &bu_);
     IMU::Bias GetDeltaBias(const Bias &b_);
 
+
     Eigen::Matrix3f GetDeltaRotation(const Bias &b_);
     Eigen::Vector3f GetDeltaVelocity(const Bias &b_);
     Eigen::Vector3f GetDeltaPosition(const Bias &b_);
@@ -198,6 +202,27 @@ public:
 
     Bias GetOriginalBias();
     Bias GetUpdatedBias();
+
+    #ifdef COVINS_MOD
+    struct integrable
+    {
+        template<class Archive>
+        void serialize(Archive & ar, const unsigned int version)
+        {
+            ar & boost::serialization::make_array(a.data(), a.size());
+            ar & boost::serialization::make_array(w.data(), w.size());
+            ar & t;
+        }
+
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+        integrable(){}
+        integrable(const Eigen::Vector3f &a_, const Eigen::Vector3f &w_ , const float &t_):a(a_),w(w_),t(t_){}
+        Eigen::Vector3f a, w;
+        float t;
+    };
+
+    std::vector<integrable> GetMeasurements();
+    #endif
 
     void printMeasurements() const {
         std::cout << "pint meas:\n";
@@ -228,6 +253,7 @@ private:
     // This is used to compute the updated values of the preintegration
     Eigen::Matrix<float,6,1> db;
 
+    #ifndef COVINS_MOD
     struct integrable
     {
         template<class Archive>
@@ -244,6 +270,16 @@ private:
         Eigen::Vector3f a, w;
         float t;
     };
+    #endif
+    // #ifndef COVINS_MOD
+    // struct integrable
+    // {
+    //     integrable(const cv::Point3f &a_, const cv::Point3f &w_ , const float &t_):a(a_),w(w_),t(t_){}
+    //     cv::Point3f a;
+    //     cv::Point3f w;
+    //     float t;
+    // };
+    // #endif
 
     std::vector<integrable> mvMeasurements;
 

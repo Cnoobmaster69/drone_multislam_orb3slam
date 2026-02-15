@@ -28,6 +28,9 @@
 #include <eigen3/Eigen/Geometry>
 #include <opencv2/opencv.hpp>
 
+// Sophus
+#include <sophus/se3.hpp>
+
 // COVINS
 #include <covins/covins_base/config_comm.hpp>
 
@@ -62,9 +65,11 @@ public:
     auto static ToCvMat33(Matrix3Type& m33)                                             ->cv::Mat;
     auto static ToCvMat44(Matrix4Type& m44)                                             ->cv::Mat;
 
-    static auto ToEigenVec3d(const cv::Mat &cvVector)                                   ->TypeDefs::Vector3Type;
+    // static auto ToEigenVec3d(const cv::Mat &cvVector)                                   ->TypeDefs::Vector3Type;
+    static auto ToEigenVec3d(const Eigen::Vector3f &v) -> TypeDefs::Vector3Type;
     static auto ToEigenMat33d(const cv::Mat &cvMat3)                                    ->TypeDefs::Matrix3Type;
-    static auto ToEigenMat44d(const cv::Mat &cvMat4)                                    ->TypeDefs::Matrix4Type;
+    // static auto ToEigenMat44d(const cv::Mat &cvMat4)                                    ->TypeDefs::Matrix4Type;
+    static auto ToEigenMat44d(const Sophus::SE3f& T)-> Matrix4Type;
 
     static auto ToKeypointType(Eigen::Vector2d kp_in)                                   ->TypeDefs::KeypointType {
         TypeDefs::KeypointType kp_out = TypeDefs::KeypointType(

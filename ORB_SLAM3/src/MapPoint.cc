@@ -21,11 +21,50 @@
 
 #include<mutex>
 
+// COVINS
+#include <covins/covins_base/utils_base.hpp>
+#include <covins/covins_base/typedefs_base.hpp>
+
 namespace ORB_SLAM3
 {
 
 long unsigned int MapPoint::nNextId=0;
 mutex MapPoint::mGlobalMutex;
+
+#ifdef COVINS_MOD
+auto MapPoint::ConvertToMsg(covins::MsgLandmark &msg, KeyFrame *kf_ref, bool is_update, size_t cliend_id)->void {
+    std::unique_lock<std::mutex> loc_obs(mMutexFeatures);
+    std::unique_lock<std::mutex> lock_pos(mMutexPos);
+
+    msg.is_update_msg = is_update;
+
+    msg.id.first = mnId;
+    msg.id.second = cliend_id;
+
+    if(!kf_ref) {
+        std::cout << COUTERROR << "LM " << mnId << ": no kf_ref given" << std::endl;
+        exit(-1);
+    }
+
+    msg.id_reference.first = kf_ref->mnId;
+    msg.id_reference.second = cliend_id;
+
+    covins::TypeDefs::TransformType T_w_sref = covins::Utils::ToEigenMat44d(kf_ref->GetImuPose());
+    covins::TypeDefs::TransformType T_sref_w = T_w_sref.inverse();
+    covins::TypeDefs::Matrix3Type R_sref_w = T_sref_w.block<3,3>(0,0);
+    covins::TypeDefs::Vector3Type t_sref_w = T_sref_w.block<3,1>(0,3);
+    covins::TypeDefs::Vector3Type pos_w = covins::Utils::ToEigenVec3d(mWorldPos);
+    msg.pos_ref = R_sref_w * pos_w + t_sref_w;
+
+    if(!is_update) {
+        for(std::map<KeyFrame*,std::tuple<int,int>>::const_iterator mit=mObservations.begin();mit!=mObservations.end();++mit){
+            if(mit->first != nullptr){
+                msg.observations.insert(std::make_pair(make_pair(mit->first->mnId,cliend_id),get<0>(mit->second)));
+            }
+        }
+    }
+}
+#endif
 
 MapPoint::MapPoint():
     mnFirstKFid(0), mnFirstFrame(0), nObs(0), mnTrackReferenceForFrame(0),

@@ -44,6 +44,31 @@ find_package(Eigen3 3.1.0 REQUIRED)
 find_package(Pangolin REQUIRED)
 find_package(realsense2)
 
+# --- COVINS (manual) ---
+find_path(COVINS_INCLUDE_DIR
+  NAMES covins/covins_base/utils_base.hpp
+  PATHS $ENV{HOME}/.local/include /usr/local/include /usr/include
+)
+
+find_library(COVINS_COMM_LIB
+  NAMES covins_comm
+  PATHS $ENV{HOME}/.local/lib /usr/local/lib /usr/lib
+)
+
+if(NOT COVINS_INCLUDE_DIR)
+  message(FATAL_ERROR "COVINS headers not found (expected under ~/.local/include/covins/...).")
+endif()
+
+if(NOT COVINS_COMM_LIB)
+  message(FATAL_ERROR "libcovins_comm.so not found (expected under ~/.local/lib).")
+endif()
+
+message(STATUS "COVINS_INCLUDE_DIR = ${COVINS_INCLUDE_DIR}")
+message(STATUS "COVINS_COMM_LIB    = ${COVINS_COMM_LIB}")
+
+include_directories(${COVINS_INCLUDE_DIR})
+
+
 include_directories(
 ${PROJECT_SOURCE_DIR}
 ${PROJECT_SOURCE_DIR}/include
@@ -84,6 +109,7 @@ ${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2/lib/libDBoW2.so
 ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
 -lboost_serialization
 -lcrypto
+${COVINS_COMM_LIB}
 )
 
 # If RealSense SDK is found the library is added and its examples compiled

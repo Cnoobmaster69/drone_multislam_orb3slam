@@ -38,6 +38,9 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/map.hpp>
 
+// COVINS
+#include "comm/communicator.hpp"
+
 
 namespace ORB_SLAM3
 {
@@ -196,6 +199,14 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     KeyFrame();
     KeyFrame(Frame &F, Map* pMap, KeyFrameDatabase* pKFDB);
+
+    #ifdef COVINS_MOD
+    struct cmp_by_id{
+        bool operator() (const KeyFrame* a, const KeyFrame* b){
+            if(a->mnId < b->mnId) return true;
+            else return false;
+    }};
+    #endif
 
     // Pose functions
     void SetPose(const Sophus::SE3f &Tcw);
@@ -383,6 +394,22 @@ public:
     const std::vector<float> mvuRight; // negative value for monocular points
     const std::vector<float> mvDepth; // negative value for monocular points
     const cv::Mat mDescriptors;
+
+    #ifdef COVINS_MOD
+    // Eigen Keys for COVINS
+    covins::TypeDefs::KeypointVector keys_eigen_;
+    covins::TypeDefs::KeypointVector keys_eigen_un_;
+    covins::TypeDefs::AorsVector keys_eigen_aors_;
+
+    // Img Dims
+    static double img_width;
+    static double img_height;
+
+    bool sent_once_ = false;
+    //Msg creation
+    auto ConvertToMsg(covins::MsgKeyframe &msg, KeyFrame* kf_ref, bool is_update, size_t cliend_id)->void;
+    auto ConvertPreintegrationToMsg(covins::PreintegrationData &data)->void;
+    #endif
 
     //BoW
     DBoW2::BowVector mBowVec;

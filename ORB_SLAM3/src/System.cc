@@ -33,6 +33,8 @@
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 
+#include <comm/communicator.hpp> // for NO_LOOP_FINDER
+
 namespace ORB_SLAM3
 {
 
@@ -235,6 +237,52 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
         mpLoopCloser->mpViewer = mpViewer;
         mpViewer->both = mpFrameDrawer->both;
     }
+
+    //Set pointers between threads
+    mpTracker->SetLocalMapper(mpLocalMapper);
+    #ifdef COVINS_MOD
+    #ifndef NO_LOOP_FINDER
+    mpTracker->SetLoopClosing(mpLoopCloser);
+    #endif
+    #else
+    mpTracker->SetLoopClosing(mpLoopCloser);
+    #endif
+
+    mpLocalMapper->SetTracker(mpTracker);
+    #ifdef COVINS_MOD
+    #ifndef NO_LOOP_FINDER
+    mpLocalMapper->SetLoopCloser(mpLoopCloser);
+    #endif
+    #else
+    mpLocalMapper->SetLoopCloser(mpLoopCloser);
+    #endif
+
+    mpLoopCloser->SetTracker(mpTracker);
+    #ifdef COVINS_MOD
+    #ifndef NO_LOOP_FINDER
+    mpLoopCloser->SetLocalMapper(mpLocalMapper);
+    #endif
+    #else
+    mpLoopCloser->SetLocalMapper(mpLocalMapper);
+    #endif
+
+    #ifdef COVINS_MOD
+    std::cout << ">>> COVINS: Initialize communicator" << std::endl;
+    comm_.reset(new Communicator(covins_params::sys::server_ip,covins_params::sys::port,mpAtlas));
+    std::cout << ">>> COVINS: Start comm thread" << std::endl;
+    thread_comm_.reset(new std::thread(&Communicator::Run,comm_));
+
+    // Get ID from back-end
+    std::cout << ">>> COVINS: wait for back-end response" << std::endl;
+    while(comm_->GetClientId() < 0){
+        usleep(1000); //wait until ID is received from server
+    }
+    std::cout << ">>> COVINS: client id: " << comm_->GetClientId() << std::endl;
+
+    // Pass to mapping
+    mpLocalMapper->SetComm(comm_);
+
+    #endif
 
     // Fix verbosity
     Verbose::SetTh(Verbose::VERBOSITY_QUIET);
@@ -512,54 +560,121 @@ void System::ResetActiveMap()
     mbResetActiveMap = true;
 }
 
+// void System::Shutdown()
+// {
+//     {
+//         unique_lock<mutex> lock(mMutexReset);
+//         mbShutDown = true;
+//     }
+
+//     cout << "Shutdown" << endl;
+
+//     mpLocalMapper->RequestFinish();
+//     mpLoopCloser->RequestFinish();
+//     /*if(mpViewer)
+//     {
+//         mpViewer->RequestFinish();
+//         while(!mpViewer->isFinished())
+//             usleep(5000);
+//     }*/
+
+//     // Wait until all thread have effectively stopped
+//     /*while(!mpLocalMapper->isFinished() || !mpLoopCloser->isFinished() || mpLoopCloser->isRunningGBA())
+//     {
+//         if(!mpLocalMapper->isFinished())
+//             cout << "mpLocalMapper is not finished" << endl;*/
+//         /*if(!mpLoopCloser->isFinished())
+//             cout << "mpLoopCloser is not finished" << endl;
+//         if(mpLoopCloser->isRunningGBA()){
+//             cout << "mpLoopCloser is running GBA" << endl;
+//             cout << "break anyway..." << endl;
+//             break;
+//         }*/
+//         /*usleep(5000);
+//     }*/
+
+//     if(!mStrSaveAtlasToFile.empty())
+//     {
+//         Verbose::PrintMess("Atlas saving to file " + mStrSaveAtlasToFile, Verbose::VERBOSITY_NORMAL);
+//         SaveAtlas(FileType::BINARY_FILE);
+//     }
+
+//     /*if(mpViewer)
+//         pangolin::BindToContext("ORB-SLAM2: Map Viewer");*/
+
+// #ifdef REGISTER_TIMES
+//     mpTracker->PrintTimeStats();
+// #endif
+
+
+// }
+
 void System::Shutdown()
 {
+    // 0) marca shutdown (tu wrapper lo usa)
     {
-        unique_lock<mutex> lock(mMutexReset);
+        std::unique_lock<std::mutex> lock(mMutexReset);
         mbShutDown = true;
     }
+    std::cout << "Shutdown" << std::endl;
 
-    cout << "Shutdown" << endl;
-
+    // 1) pide terminar threads “core”
     mpLocalMapper->RequestFinish();
     mpLoopCloser->RequestFinish();
-    /*if(mpViewer)
-    {
+
+    if(mpViewer)
         mpViewer->RequestFinish();
-        while(!mpViewer->isFinished())
-            usleep(5000);
-    }*/
 
-    // Wait until all thread have effectively stopped
-    /*while(!mpLocalMapper->isFinished() || !mpLoopCloser->isFinished() || mpLoopCloser->isRunningGBA())
+    // 2) espera a que terminen (recomendado si vas a guardar atlas)
+    while(!mpLocalMapper->isFinished() ||
+          !mpLoopCloser->isFinished() ||
+          mpLoopCloser->isRunningGBA())
     {
-        if(!mpLocalMapper->isFinished())
-            cout << "mpLocalMapper is not finished" << endl;*/
-        /*if(!mpLoopCloser->isFinished())
-            cout << "mpLoopCloser is not finished" << endl;
-        if(mpLoopCloser->isRunningGBA()){
-            cout << "mpLoopCloser is running GBA" << endl;
-            cout << "break anyway..." << endl;
-            break;
-        }*/
-        /*usleep(5000);
-    }*/
+        // (prints opcionales)
+        usleep(5000);
+        // si quieres conservar tu lógica de “break anyway” cuando corre GBA, ponla aquí
+    }
 
+#ifdef COVINS_MOD
+    // 3) termina communicator y espera
+    if(comm_) {
+        comm_->SetFinish();
+        while(!comm_->IsFinished()) {
+            std::cout << "comm_ is not finished" << std::endl;
+            usleep(5000);
+        }
+    }
+#endif
+
+    // 4) join de threads (solo si fueron creados)
+    // (si en tu constructor no creas viewer thread, mptViewer puede ser nullptr)
+    if(mptLocalMapping) mptLocalMapping->join();
+    if(mptLoopClosing)  mptLoopClosing->join();
+
+#ifdef COVINS_MOD
+    if(thread_comm_) thread_comm_->join();
+#endif
+
+    if(mpViewer && mptViewer) mptViewer->join();
+
+    // 5) ya con todo quieto, guarda atlas (tu feature)
     if(!mStrSaveAtlasToFile.empty())
     {
-        Verbose::PrintMess("Atlas saving to file " + mStrSaveAtlasToFile, Verbose::VERBOSITY_NORMAL);
+        Verbose::PrintMess("Atlas saving to file " + mStrSaveAtlasToFile,
+                           Verbose::VERBOSITY_NORMAL);
         SaveAtlas(FileType::BINARY_FILE);
     }
 
-    /*if(mpViewer)
-        pangolin::BindToContext("ORB-SLAM2: Map Viewer");*/
+    // 6) pangolin bind: esto a veces causa segfault según contexto.
+    // Si te llega a crashear, lo desactivas o lo guardas con try/catch / flags.
+    // (hay reportes sobre esto)
+    // if(mpViewer) pangolin::BindToContext("ORB-SLAM2: Map Viewer"); :contentReference[oaicite:2]{index=2}
 
 #ifdef REGISTER_TIMES
     mpTracker->PrintTimeStats();
 #endif
-
-
 }
+
 
 bool System::isShutDown() {
     unique_lock<mutex> lock(mMutexReset);

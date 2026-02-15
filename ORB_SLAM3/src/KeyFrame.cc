@@ -21,10 +21,205 @@
 #include "ImuTypes.h"
 #include<mutex>
 
+#include "ORBmatcher.h"
+#include "ORBextractor.h"
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/core/eigen.hpp>
+#include <opencv2/features2d.hpp>
+
+// COVINS
+#include <eigen3/Eigen/Core>
+#include <covins/covins_base/utils_base.hpp>
+#include <covins/covins_base/typedefs_base.hpp>
+
 namespace ORB_SLAM3
 {
 
 long unsigned int KeyFrame::nNextId=0;
+
+#ifdef COVINS_MOD
+double KeyFrame::img_width = -1.0;
+double KeyFrame::img_height = -1.0;
+
+auto KeyFrame::ConvertToMsg(covins::MsgKeyframe &msg, KeyFrame *kf_ref, bool is_update, size_t cliend_id)->void {
+    std::unique_lock<std::mutex> lock_conn(mMutexConnections);
+    std::unique_lock<std::mutex> lock_feat(mMutexFeatures);
+    std::unique_lock<std::mutex> lock_pose(mMutexPose);
+
+    if(kf_ref && kf_ref->mnId == mnId) {
+        //This will cause a deadlock when calling kf_ref->GetPoseTws();
+        std::cout << COUTERROR << "kf_ref && kf_ref->id_ == id_" << std::endl;
+        exit(-1);
+    }
+
+    msg.is_update_msg = is_update;
+
+    msg.id.first = mnId;
+    msg.id.second = cliend_id;
+    msg.timestamp = mTimeStamp;
+    //calibration
+    if(!is_update){
+        // Eigen::Matrix4d Tsc = covins::Utils::ToEigenMat44d(mImuCalib.mTbc);
+        Eigen::Matrix4f Tf1 = mImuCalib.mTbc.matrix();
+        Eigen::Matrix4d Tsc = Tf1.cast<double>();
+        covins::eCamModel cmodel = covins::eCamModel::PINHOLE;
+        covins::eDistortionModel dmodel = covins::eDistortionModel::RADTAN;
+        Eigen::VectorXd DistCoeffs(4,1);
+        DistCoeffs(0) = mDistCoef.at<float>(0,0);
+        DistCoeffs(1) = mDistCoef.at<float>(0,1);
+        DistCoeffs(2) = mDistCoef.at<float>(0,2);
+        DistCoeffs(3) = mDistCoef.at<float>(0,3);
+        if(img_width < 0 || img_height < 0) {
+            std::cout << COUTRED("Invalid Image Dims: ") << img_width << "|" << img_height << std::endl;
+            return;
+        }
+        double dw = img_width; //this->mnMaxX; -- this is not the image dimension (presumably the undistorted dimension)
+        double dh = img_height; //this->mnMaxY; -- this is not the image dimension (presumably the undistorted dimension)
+        double dfx = this->fx;
+        double dfy = this->fy;
+        double dcx = this->cx;
+        double dcy = this->cy;
+        double damax = 0.0;
+        double dgmax = 0.0;
+        // cv::Mat cov = mImuCalib.Cov;
+        // cv::Mat cov_walk = mImuCalib.CovWalk;
+        Eigen::Matrix<float,6,6> cov_e = mImuCalib.Cov.toDenseMatrix();
+        cv::Mat cov(6,6,CV_32F);
+        std::memcpy(cov.data, cov_e.data(), 36*sizeof(float));
+        Eigen::Matrix<float,6,6> cov_walk_e = mImuCalib.CovWalk.toDenseMatrix();
+        cv::Mat cov_walk(6,6,CV_32F);
+        std::memcpy(cov_walk.data, cov_walk_e.data(), 36*sizeof(float));
+        double dsigmaac = std::sqrt(cov.at<float>(3,3));
+        double dsigmagc = std::sqrt(cov.at<float>(0,0));
+        double dsigmaba = 0.0;
+        double dsigmabg = 0.0;
+        double dsigmaawc = std::sqrt(cov_walk.at<float>(3,3));
+        double dsigmagwc  = std::sqrt(cov_walk.at<float>(0,0));
+        double dtau = 0.0;
+        double dg = IMU::GRAVITY_VALUE;
+        Eigen::Vector3d va0 = covins::TypeDefs::Vector3Type::Zero();
+        int irate = 200;
+        double dDelayC0toIMU = 0.0;
+        double dDelayC1toIMU = 0.0;
+
+        covins::VICalibration covins_calib(Tsc,cmodel,dmodel,DistCoeffs,
+                                           dw,dh,dfx,dfy,dcx,dcy,
+                                           damax,dgmax,dsigmaac,dsigmagc,dsigmaba,dsigmabg,dsigmaawc,dsigmagwc,
+                                           dtau,dg,va0,irate,dDelayC0toIMU,dDelayC1toIMU);
+        msg.calibration = covins_calib;
+    }
+
+    if(!is_update){
+        msg.img_dim_x_min = 0; //this->mnMinX; -- this is not the image dimension (presumably the undistorted dimensions)
+        msg.img_dim_y_min = 0; //this->mnMinY; -- this is not the image dimension (presumably the undistorted dimensions)
+        msg.img_dim_x_max = img_width; //this->mnMaxX; -- this is not the image dimension (presumably the undistorted dimensions)
+        msg.img_dim_y_max = img_height; //this->mnMaxY; -- this is not the image dimension (presumably the undistorted dimensions)
+    }
+
+    if (!is_update) {
+      
+        // cv::Mat img = NLeft;
+        const size_t num_keys = mvKeys.size();
+        msg.keypoints_aors          = this->keys_eigen_aors_;
+        msg.keypoints_distorted     = this->keys_eigen_;
+        msg.keypoints_undistorted = this->keys_eigen_un_;
+        
+    }
+
+    if(!is_update) {
+        msg.descriptors = mDescriptors.clone();
+    }
+
+    // Eigen::Matrix4d Tws = covins::Utils::ToEigenMat44d(mTwc*mImuCalib.mTcb);
+    Eigen::Matrix4f Tf2 = (mTwc*mImuCalib.mTbc).matrix();
+    Eigen::Matrix4d Tws = Tf2.cast<double>();
+
+    if(!is_update){
+        ConvertPreintegrationToMsg(msg.preintegration);
+    }
+
+    // msg.T_s_c = covins::Utils::ToEigenMat44d(mImuCalib.mTbc);
+    Eigen::Matrix4f Tf3 = mImuCalib.mTbc.matrix();
+    msg.T_s_c = Tf3.cast<double>();
+
+    // covins::TypeDefs::Vector3Type v_in_s = Tws.block<3,3>(0,0).inverse() *  covins::Utils::ToEigenVec3d(mVw);
+    covins::TypeDefs::Vector3Type v_in_s = Tws.block<3,3>(0,0).inverse() *  mVw.cast<double>();
+    msg.velocity = v_in_s;
+
+    msg.bias_accel = Eigen::Vector3d(mImuBias.bax,mImuBias.bay,mImuBias.baz);
+    msg.bias_gyro = Eigen::Vector3d(mImuBias.bwx,mImuBias.bwy,mImuBias.bwz);
+    msg.lin_acc = msg.preintegration.acc;
+    msg.ang_vel = msg.preintegration.gyr;
+
+    covins::TypeDefs::TransformType T_w_sref = covins::TypeDefs::TransformType::Identity();
+    // if(kf_ref) T_w_sref = covins::Utils::ToEigenMat44d((kf_ref->GetImuPose()));
+    Eigen::Matrix4f Tf = kf_ref->GetImuPose().matrix();
+    if(kf_ref) T_w_sref = Tf.cast<double>();
+
+    if(!kf_ref && mnId != 0) {
+        std::cout << COUTERROR << "KF " << mnId << ": no kf_ref" << std::endl;
+    }
+
+    if(mPrevKF) {
+        msg.id_predecessor.first = mPrevKF->mnId;
+        msg.id_predecessor.second = cliend_id;
+    }
+    if(mNextKF) {
+        msg.id_successor.first = mNextKF->mnId;
+        msg.id_successor.second = cliend_id;
+    }
+    if(kf_ref) {
+        msg.id_reference.first = kf_ref->mnId;
+        msg.id_reference.second = cliend_id;
+    }
+    msg.T_sref_s = T_w_sref.inverse() * Tws;
+
+    if(!is_update){
+        const int num_lms = mvpMapPoints.size();
+        for (size_t indx = 0; indx < num_lms; indx++) {
+            const auto lm0 = mvpMapPoints[indx];
+            if(lm0) msg.landmarks[indx] = std::make_pair(lm0->mnId,cliend_id);
+        }
+    }
+}
+
+auto KeyFrame::ConvertPreintegrationToMsg(covins::PreintegrationData &data)->void {
+    if(!mpImuPreintegrated) return;
+
+    const auto imu_measurements = mpImuPreintegrated->GetMeasurements();
+    const auto bias = mpImuPreintegrated->GetUpdatedBias();
+    const int n = imu_measurements.size();
+
+    data.lin_bias_accel = Eigen::Vector3d(bias.bax,bias.bay,bias.baz);
+    data.lin_bias_gyro = Eigen::Vector3d(bias.bwx,bias.bwy,bias.bwz);
+
+    data.dt.resize(n);
+    data.lin_acc_x.resize(n);
+    data.lin_acc_y.resize(n);
+    data.lin_acc_z.resize(n);
+    data.ang_vel_x.resize(n);
+    data.ang_vel_y.resize(n);
+    data.ang_vel_z.resize(n);
+
+    for(int idx=0;idx<n;++idx) {
+        const double dt = imu_measurements[idx].t;
+        const auto la = imu_measurements[idx].a;
+        const auto av = imu_measurements[idx].w;
+        if(idx==0) {
+            data.acc = Eigen::Vector3d(la.x(),la.y(),la.z());
+            data.gyr = Eigen::Vector3d(av.x(),av.y(),av.z());
+        }
+        data.dt[idx] = dt;
+        data.lin_acc_x[idx] = la.x();
+        data.lin_acc_y[idx] = la.y();
+        data.lin_acc_z[idx] = la.z();
+        data.ang_vel_x[idx] = av.x();
+        data.ang_vel_y[idx] = av.y();
+        data.ang_vel_z[idx] = av.z();
+    }
+}
+#endif
 
 KeyFrame::KeyFrame():
         mnFrameId(0),  mTimeStamp(0), mnGridCols(FRAME_GRID_COLS), mnGridRows(FRAME_GRID_ROWS),
@@ -77,6 +272,29 @@ KeyFrame::KeyFrame(Frame &F, Map *pMap, KeyFrameDatabase *pKFDB):
         }
     }
 
+    #ifdef COVINS_MOD
+    {
+        //Convert KPs to Eigen
+        keys_eigen_aors_.reserve(mvKeys.size());
+        keys_eigen_.reserve(mvKeys.size());
+        keys_eigen_un_.reserve(mvKeys.size());
+        for(const auto &i : mvKeys){
+            covins::TypeDefs::AorsType aors; //Angle,Octave,Response,Size
+            keys_eigen_aors_.push_back(aors);
+
+            covins::TypeDefs::KeypointType kp_eigen;
+            kp_eigen[0] = i.pt.x;
+            kp_eigen[1] = i.pt.y;
+            keys_eigen_.push_back(kp_eigen);
+        }
+        for(const auto &i : mvKeysUn){
+            covins::TypeDefs::KeypointType kp_un_eigen;
+            kp_un_eigen[0] = i.pt.x;
+            kp_un_eigen[1] = i.pt.y;
+            keys_eigen_un_.push_back(kp_un_eigen);
+        }
+    }
+    #endif
 
 
     if(!F.HasVelocity()) {

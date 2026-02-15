@@ -76,23 +76,34 @@ auto Utils::ToEigenMat33d(const cv::Mat &cvMat3)->Matrix3Type {
     return M;
 }
 
-auto Utils::ToEigenMat44d(const cv::Mat &cvMat4)->Matrix4Type {
-    Matrix4Type M;
+// auto Utils::ToEigenMat44d(const cv::Mat &cvMat4)->Matrix4Type {
+//     Matrix4Type M;
 
-    M << cvMat4.at<float>(0,0), cvMat4.at<float>(0,1), cvMat4.at<float>(0,2), cvMat4.at<float>(0,3),
-         cvMat4.at<float>(1,0), cvMat4.at<float>(1,1), cvMat4.at<float>(1,2), cvMat4.at<float>(1,3),
-         cvMat4.at<float>(2,0), cvMat4.at<float>(2,1), cvMat4.at<float>(2,2), cvMat4.at<float>(2,3),
-         cvMat4.at<float>(3,0), cvMat4.at<float>(3,1), cvMat4.at<float>(3,2), cvMat4.at<float>(3,3);
+//     M << cvMat4.at<float>(0,0), cvMat4.at<float>(0,1), cvMat4.at<float>(0,2), cvMat4.at<float>(0,3),
+//          cvMat4.at<float>(1,0), cvMat4.at<float>(1,1), cvMat4.at<float>(1,2), cvMat4.at<float>(1,3),
+//          cvMat4.at<float>(2,0), cvMat4.at<float>(2,1), cvMat4.at<float>(2,2), cvMat4.at<float>(2,3),
+//          cvMat4.at<float>(3,0), cvMat4.at<float>(3,1), cvMat4.at<float>(3,2), cvMat4.at<float>(3,3);
 
-    return M;
+//     return M;
+// }
+auto Utils::ToEigenMat44d(const Sophus::SE3f& T)->Matrix4Type
+{
+    Eigen::Matrix4f Tf = T.matrix();
+    return Tf.cast<double>();
 }
 
-auto Utils::ToEigenVec3d(const cv::Mat &cvVector)->Vector3Type {
-    Vector3Type v;
-    v << cvVector.at<float>(0), cvVector.at<float>(1), cvVector.at<float>(2);
+// auto Utils::ToEigenVec3d(const cv::Mat &cvVector)->Vector3Type {
+//     Vector3Type v;
+//     v << cvVector.at<float>(0), cvVector.at<float>(1), cvVector.at<float>(2);
 
-    return v;
+//     return v;
+// }
+
+ auto Utils::ToEigenVec3d(const Eigen::Vector3f &v) -> TypeDefs::Vector3Type
+{
+    return v.cast<TypeDefs::precision_t>(); // double
 }
+
 
 auto Utils::ToDescriptorVector(const cv::Mat &descriptors)->std::vector<cv::Mat> {
     std::vector<cv::Mat> v_desc;

@@ -29,6 +29,9 @@
 
 #include <mutex>
 
+// COVINS
+#include "comm/communicator.hpp"
+
 
 namespace ORB_SLAM3
 {
@@ -129,6 +132,22 @@ public:
     int nLBA_exec;
     int nLBA_abort;
 #endif
+
+    #ifdef COVINS_MOD
+    void SetComm(std::shared_ptr<Communicator> comm) {
+        comm_ = comm;
+    }
+
+    auto IsCommInitialized()->bool {
+        std::unique_lock<std::mutex> lock(mtx_comm_init_);
+        return comm_init_;
+    }
+    auto SetCommInitialized()->void {
+        std::unique_lock<std::mutex> lock(mtx_comm_init_);
+        comm_init_ = true;
+    }
+    #endif
+
 protected:
 
     bool CheckNewKeyFrames();
@@ -194,6 +213,13 @@ protected:
 
     //DEBUG
     ofstream f_lm;
+
+    #ifdef COVINS_MOD
+    std::shared_ptr<Communicator> comm_;
+    std::set<KeyFrame*,KeyFrame::cmp_by_id> kf_out_buffer_;
+    std::mutex mtx_comm_init_;
+    bool comm_init_ = false;
+    #endif
 
     };
 

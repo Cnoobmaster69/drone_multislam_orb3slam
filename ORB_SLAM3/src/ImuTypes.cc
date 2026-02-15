@@ -340,6 +340,13 @@ Eigen::Vector3f Preintegrated::GetOriginalDeltaPosition()
     return dP;
 }
 
+#ifdef COVINS_MOD
+std::vector<Preintegrated::integrable> Preintegrated::GetMeasurements() {
+    std::unique_lock<std::mutex> lock(mMutex);
+    return mvMeasurements;
+}
+#endif
+
 Bias Preintegrated::GetOriginalBias()
 {
     std::unique_lock<std::mutex> lock(mMutex);
