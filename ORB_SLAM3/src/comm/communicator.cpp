@@ -24,6 +24,8 @@
 // COVINS
 #include "comm/communicator.hpp"
 #include <covins/covins_base/utils_base.hpp>
+#include <errno.h>
+#include <string.h>
 
 // ORB-SLAM3
 #include "Atlas.h"
@@ -39,9 +41,12 @@ Communicator::Communicator(std::string server_ip, std::string port, Atlas* map)
 
     std::cout << "--> Connect to server" << std::endl;
     newfd_ = ConnectToServer(server_ip.c_str(),port);
+    newfd_ = ConnectToServer("127.0.0.1","9033");
     if(newfd_ == 2){
-        std::cout << COUTFATAL << ": Could no establish connection - exit" << std::endl;
-        exit(-1);
+        // std::cout << COUTFATAL << ": Could no establish connection - exit" << std::endl;
+        // exit(-1);
+        std::cerr << "connect failed errno=" << errno
+             << " (" << strerror(errno) << ")\n";
     }
     std::cout << "newfd_: " << newfd_ << std::endl;
     std::cout << "--> Connected" << std::endl;

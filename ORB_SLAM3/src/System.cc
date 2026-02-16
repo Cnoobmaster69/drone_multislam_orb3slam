@@ -274,9 +274,9 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
 
     // Get ID from back-end
     std::cout << ">>> COVINS: wait for back-end response" << std::endl;
-    while(comm_->GetClientId() < 0){
-        usleep(1000); //wait until ID is received from server
-    }
+    // while(comm_->GetClientId() < 0){
+    //     usleep(1000); //wait until ID is received from server
+    // }
     std::cout << ">>> COVINS: client id: " << comm_->GetClientId() << std::endl;
 
     // Pass to mapping
