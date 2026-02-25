@@ -1703,6 +1703,30 @@ src/Viewer.cc.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/ORB_SLAM3.dir/build.make CMakeFiles/ORB_SLAM3.dir/src/Viewer.cc.s
 .PHONY : src/Viewer.cc.s
 
+src/comm/communicator.o: src/comm/communicator.cpp.o
+.PHONY : src/comm/communicator.o
+
+# target to build an object file
+src/comm/communicator.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ORB_SLAM3.dir/build.make CMakeFiles/ORB_SLAM3.dir/src/comm/communicator.cpp.o
+.PHONY : src/comm/communicator.cpp.o
+
+src/comm/communicator.i: src/comm/communicator.cpp.i
+.PHONY : src/comm/communicator.i
+
+# target to preprocess a source file
+src/comm/communicator.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ORB_SLAM3.dir/build.make CMakeFiles/ORB_SLAM3.dir/src/comm/communicator.cpp.i
+.PHONY : src/comm/communicator.cpp.i
+
+src/comm/communicator.s: src/comm/communicator.cpp.s
+.PHONY : src/comm/communicator.s
+
+# target to generate assembly for a file
+src/comm/communicator.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ORB_SLAM3.dir/build.make CMakeFiles/ORB_SLAM3.dir/src/comm/communicator.cpp.s
+.PHONY : src/comm/communicator.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -1893,6 +1917,9 @@ help:
 	@echo "... src/Viewer.o"
 	@echo "... src/Viewer.i"
 	@echo "... src/Viewer.s"
+	@echo "... src/comm/communicator.o"
+	@echo "... src/comm/communicator.i"
+	@echo "... src/comm/communicator.s"
 .PHONY : help
 
 

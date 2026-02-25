@@ -34,6 +34,9 @@
 #include <mutex>
 #include <chrono>
 
+// COVINS
+#include <comm/communicator.hpp> // for NO_LOOP_FINDER
+
 
 using namespace std;
 
@@ -1825,12 +1828,25 @@ void Tracking::Track()
             CreateMapInAtlas();
             return;
         }
+        // else if(mCurrentFrame.mTimeStamp>mLastFrame.mTimeStamp+1.0)
+        #ifdef COVINS_MOD
+        else if(mCurrentFrame.mTimeStamp>mLastFrame.mTimeStamp+covins_params::orb::imu_stamp_max_diff)
+        #else
         else if(mCurrentFrame.mTimeStamp>mLastFrame.mTimeStamp+1.0)
+        #endif
         {
             // cout << mCurrentFrame.mTimeStamp << ", " << mLastFrame.mTimeStamp << endl;
             // cout << "id last: " << mLastFrame.mnId << "    id curr: " << mCurrentFrame.mnId << endl;
             if(mpAtlas->isInertial())
             {
+                #ifdef COVINS_MOD
+                // COVINS does not allow the agent to re-start the mapping session once it has started sending data to the server
+                // Therefore, we supress this behaviour here and exit in this case
+                if(mpLocalMapper->IsCommInitialized()) {
+                    std::cout << COUTRED(ERROR) << " Map Reset after Communication to Server was started - not permitted, exiting" << std::endl;
+                    exit(-1);
+                }
+                #endif
 
                 if(mpAtlas->isImuInitialized())
                 {
@@ -1914,6 +1930,11 @@ void Tracking::Track()
             mLastFrame = Frame(mCurrentFrame);
             return;
         }
+
+        #ifdef COVINS_MOD
+        KeyFrame::img_width = mImGray.cols;
+        KeyFrame::img_height = mImGray.rows;
+        #endif
 
         if(mpAtlas->GetAllMaps().size() == 1)
         {
@@ -3608,6 +3629,13 @@ void Tracking::UpdateLocalKeyFrames()
 
 bool Tracking::Relocalization()
 {
+
+    #ifdef COVINS_MOD
+    #ifdef NO_RELOC
+    return false;
+    #endif
+    #endif
+
     Verbose::PrintMess("Starting relocalization", Verbose::VERBOSITY_NORMAL);
     // Compute Bag of Words Vector
     mCurrentFrame.ComputeBoW();
@@ -3795,6 +3823,18 @@ void Tracking::Reset(bool bLocMap)
         Verbose::PrintMess("done", Verbose::VERBOSITY_NORMAL);
     }
 
+    #ifdef COVINS_MOD
+    #ifndef NO_LOOP_FINDER
+    Verbose::PrintMess("Reseting Loop Closing...", Verbose::VERBOSITY_NORMAL);
+    mpLoopClosing->RequestReset();
+    Verbose::PrintMess("done", Verbose::VERBOSITY_NORMAL);
+    #endif
+    #else
+    Verbose::PrintMess("Reseting Loop Closing...", Verbose::VERBOSITY_NORMAL);
+    mpLoopClosing->RequestReset();
+    Verbose::PrintMess("done", Verbose::VERBOSITY_NORMAL);
+    #endif
+
 
     // Reset Loop Closing
     Verbose::PrintMess("Reseting Loop Closing...", Verbose::VERBOSITY_NORMAL);
@@ -3855,6 +3895,19 @@ void Tracking::ResetActiveMap(bool bLocMap)
         mpLocalMapper->RequestResetActiveMap(pMap);
         Verbose::PrintMess("done", Verbose::VERBOSITY_VERY_VERBOSE);
     }
+
+    // Reset Loop Closing
+    #ifdef COVINS_MOD
+    #ifndef NO_LOOP_FINDER
+    Verbose::PrintMess("Reseting Loop Closing...", Verbose::VERBOSITY_NORMAL);
+    mpLoopClosing->RequestResetActiveMap(pMap);
+    Verbose::PrintMess("done", Verbose::VERBOSITY_NORMAL);
+    #endif
+    #else
+    Verbose::PrintMess("Reseting Loop Closing...", Verbose::VERBOSITY_NORMAL);
+    mpLoopClosing->RequestResetActiveMap(pMap);
+    Verbose::PrintMess("done", Verbose::VERBOSITY_NORMAL);
+    #endif
 
     // Reset Loop Closing
     Verbose::PrintMess("Reseting Loop Closing...", Verbose::VERBOSITY_NORMAL);

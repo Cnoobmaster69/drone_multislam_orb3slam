@@ -32,6 +32,9 @@
 
 #include"../../../include/System.h"
 
+// COVINS
+#include <covins/covins_base/config_comm.hpp> //for covins_params
+
 using namespace std;
 
 class ImageGrabber
@@ -57,7 +60,7 @@ int main(int argc, char **argv)
     }    
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
-    ORB_SLAM3::System SLAM(argv[1],argv[2],ORB_SLAM3::System::RGBD,true);
+    ORB_SLAM3::System SLAM(argv[1],argv[2],ORB_SLAM3::System::RGBD,covins_params::orb::activate_visualization);
 
     ImageGrabber igb(&SLAM);
 

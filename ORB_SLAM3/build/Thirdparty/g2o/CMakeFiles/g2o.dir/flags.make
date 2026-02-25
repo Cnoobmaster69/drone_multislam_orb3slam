@@ -3,15 +3,15 @@
 
 # compile C with /usr/bin/cc
 # compile CXX with /usr/bin/c++
-C_DEFINES = -DCOMPILEDWITHC14 -DUNIX -Dg2o_EXPORTS
+C_DEFINES = -DCOMPILEDWITHC14 -DEIGEN_MAX_ALIGN_BYTES=16 -DEIGEN_MAX_STATIC_ALIGN_BYTES=16 -DUNIX -Dg2o_EXPORTS
 
-C_INCLUDES = -I/home/carlos/ws_offboard_control/src/ORB_SLAM3 -I/home/carlos/ws_offboard_control/src/ORB_SLAM3/include -I/home/carlos/ws_offboard_control/src/ORB_SLAM3/include/CameraModels -I/home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/Sophus -I/usr/include/eigen3 -I/home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/core -I/home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/types -I/home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/stuff
+C_INCLUDES = -I/home/carlos/.local/include -I/home/carlos/ws_offboard_control/src/ORB_SLAM3 -I/home/carlos/ws_offboard_control/src/ORB_SLAM3/include -I/home/carlos/ws_offboard_control/src/ORB_SLAM3/include/CameraModels -I/home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/Sophus -I/usr/include/eigen3 -I/home/carlos/ws_offboard_control/src/ORB_SLAM3/include/comm -I/home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/core -I/home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/types -I/home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/stuff
 
 C_FLAGS =   -Wall   -O3  -Wall -W -O3 -DNDEBUG -march=native -O3 -march=native -fPIC
 
-CXX_DEFINES = -DCOMPILEDWITHC14 -DUNIX -Dg2o_EXPORTS
+CXX_DEFINES = -DCOMPILEDWITHC14 -DEIGEN_MAX_ALIGN_BYTES=16 -DEIGEN_MAX_STATIC_ALIGN_BYTES=16 -DUNIX -Dg2o_EXPORTS
 
-CXX_INCLUDES = -I/home/carlos/ws_offboard_control/src/ORB_SLAM3 -I/home/carlos/ws_offboard_control/src/ORB_SLAM3/include -I/home/carlos/ws_offboard_control/src/ORB_SLAM3/include/CameraModels -I/home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/Sophus -I/usr/include/eigen3 -I/home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/core -I/home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/types -I/home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/stuff
+CXX_INCLUDES = -I/home/carlos/.local/include -I/home/carlos/ws_offboard_control/src/ORB_SLAM3 -I/home/carlos/ws_offboard_control/src/ORB_SLAM3/include -I/home/carlos/ws_offboard_control/src/ORB_SLAM3/include/CameraModels -I/home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/Sophus -I/usr/include/eigen3 -I/home/carlos/ws_offboard_control/src/ORB_SLAM3/include/comm -I/home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/core -I/home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/types -I/home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/stuff
 
 CXX_FLAGS =  -Wall   -O3 -std=c++14  -Wall -W -O3 -DNDEBUG -march=native -O3 -march=native -fPIC
 

@@ -906,56 +906,35 @@ CMakeFiles/ORB_SLAM3.dir/src/G2oTypes.cc.o: \
  /usr/include/opencv4/opencv2/flann/miniflann.hpp \
  /usr/include/opencv4/opencv2/flann/defines.h \
  /usr/include/opencv4/opencv2/flann/config.h \
- /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/ORBVocabulary.h \
- /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/DBoW2/DBoW2/FORB.h \
- /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/DBoW2/DBoW2/FClass.h \
- /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/DBoW2/DBoW2/TemplatedVocabulary.h \
- /usr/include/c++/13/fstream \
- /usr/include/x86_64-linux-gnu/c++/13/bits/basic_file.h \
- /usr/include/x86_64-linux-gnu/c++/13/bits/c++io.h \
- /usr/include/c++/13/bits/fstream.tcc \
- /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/DBoW2/DBoW2/FeatureVector.h \
- /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/DBoW2/DBoW2/ScoringObject.h \
- /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/DBoW2/DBoW2/../DUtils/Random.h \
- /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/Converter.h \
- /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/g2o/types/types_six_dof_expmap.h \
- /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/g2o/types/../core/base_binary_edge.h \
- /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/g2o/types/../core/base_unary_edge.h \
- /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/g2o/types/se3_ops.h \
- /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/g2o/types/se3_ops.hpp \
- /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/g2o/types/se3quat.h \
- /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/g2o/types/types_sba.h \
- /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/g2o/types/types_seven_dof_expmap.h \
- /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/g2o/types/types_six_dof_expmap.h \
- /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/g2o/types/sim3.h \
- /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/Sophus/sophus/sim3.hpp \
- /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/Sophus/sophus/rxso3.hpp \
- /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/Sophus/sophus/sim_details.hpp \
- /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/Settings.h \
- /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/CameraModels/GeometricCamera.h \
- /usr/include/opencv4/opencv2/imgproc/imgproc.hpp \
- /usr/include/opencv4/opencv2/imgproc.hpp \
- /usr/include/opencv4/opencv2/imgproc/segmentation.hpp \
- /usr/include/boost/serialization/export.hpp \
- /usr/include/boost/serialization/extended_type_info.hpp \
- /usr/include/c++/13/cstdarg /usr/include/boost/noncopyable.hpp \
- /usr/include/boost/core/noncopyable.hpp \
- /usr/include/boost/serialization/config.hpp \
- /usr/include/boost/config/auto_link.hpp \
- /usr/include/boost/config/abi_prefix.hpp \
- /usr/include/boost/config/abi_suffix.hpp \
- /usr/include/boost/serialization/static_warning.hpp \
- /usr/include/boost/mpl/print.hpp \
- /usr/include/boost/serialization/assume_abstract.hpp \
- /usr/include/boost/type_traits/is_abstract.hpp \
- /usr/include/boost/serialization/singleton.hpp \
- /usr/include/boost/archive/detail/auto_link_archive.hpp \
- /usr/include/boost/archive/detail/decl.hpp \
- /usr/include/boost/archive/detail/abi_prefix.hpp \
- /usr/include/boost/archive/detail/abi_suffix.hpp \
- /usr/include/boost/archive/detail/register_archive.hpp \
- /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/Converter.h \
- /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/GeometricTools.h \
+ /home/carlos/.local/include/covins/covins_base/typedefs_base.hpp \
+ /usr/include/c++/13/thread /usr/include/c++/13/bits/std_thread.h \
+ /usr/include/c++/13/bits/this_thread_sleep.h \
+ /usr/include/eigen3/Eigen/Core /usr/include/eigen3/Eigen/Geometry \
+ /usr/include/eigen3/Eigen/StdVector /usr/include/cereal/cereal.hpp \
+ /usr/include/c++/13/unordered_map \
+ /usr/include/c++/13/bits/unordered_map.h \
+ /usr/include/c++/13/bits/hashtable.h \
+ /usr/include/c++/13/bits/hashtable_policy.h \
+ /usr/include/c++/13/bits/enable_special_members.h \
+ /usr/include/c++/13/unordered_set \
+ /usr/include/c++/13/bits/unordered_set.h /usr/include/cereal/macros.hpp \
+ /usr/include/cereal/details/traits.hpp /usr/include/c++/13/typeindex \
+ /usr/include/cereal/access.hpp /usr/include/cereal/specialize.hpp \
+ /usr/include/cereal/details/helpers.hpp \
+ /usr/include/cereal/details/static_object.hpp \
+ /usr/include/cereal/types/base_class.hpp \
+ /usr/include/cereal/details/polymorphic_impl_fwd.hpp \
+ /usr/include/cereal/types/common.hpp \
+ /usr/include/cereal/types/memory.hpp \
+ /usr/include/cereal/types/polymorphic.hpp \
+ /usr/include/cereal/details/util.hpp /usr/include/c++/13/cxxabi.h \
+ /usr/include/x86_64-linux-gnu/c++/13/bits/cxxabi_tweaks.h \
+ /usr/include/cereal/details/polymorphic_impl.hpp \
+ /usr/include/cereal/types/string.hpp \
+ /usr/include/cereal/types/utility.hpp \
+ /usr/include/cereal/types/vector.hpp \
+ /usr/include/cereal/types/concepts/pair_associative_container.hpp \
+ /usr/include/cereal/archives/binary.hpp \
  /usr/include/opencv4/opencv2/opencv.hpp \
  /usr/include/opencv4/opencv2/calib3d.hpp \
  /usr/include/opencv4/opencv2/core/affine.hpp \
@@ -983,11 +962,6 @@ CMakeFiles/ORB_SLAM3.dir/src/G2oTypes.cc.o: \
  /usr/include/opencv4/opencv2/flann/dynamic_bitset.h \
  /usr/include/opencv4/opencv2/flann/dist.h \
  /usr/include/opencv4/opencv2/flann/heap.h \
- /usr/include/c++/13/unordered_map \
- /usr/include/c++/13/bits/unordered_map.h \
- /usr/include/c++/13/bits/hashtable.h \
- /usr/include/c++/13/bits/hashtable_policy.h \
- /usr/include/c++/13/bits/enable_special_members.h \
  /usr/include/opencv4/opencv2/flann/allocator.h \
  /usr/include/opencv4/opencv2/flann/random.h \
  /usr/include/opencv4/opencv2/flann/kdtree_single_index.h \
@@ -1007,6 +981,8 @@ CMakeFiles/ORB_SLAM3.dir/src/G2oTypes.cc.o: \
  /usr/include/opencv4/opencv2/highgui.hpp \
  /usr/include/opencv4/opencv2/imgcodecs.hpp \
  /usr/include/opencv4/opencv2/videoio.hpp \
+ /usr/include/opencv4/opencv2/imgproc.hpp \
+ /usr/include/opencv4/opencv2/imgproc/segmentation.hpp \
  /usr/include/opencv4/opencv2/ml.hpp \
  /usr/include/opencv4/opencv2/ml/ml.inl.hpp \
  /usr/include/opencv4/opencv2/objdetect.hpp \
@@ -1035,6 +1011,54 @@ CMakeFiles/ORB_SLAM3.dir/src/G2oTypes.cc.o: \
  /usr/include/opencv4/opencv2/video.hpp \
  /usr/include/opencv4/opencv2/video/tracking.hpp \
  /usr/include/opencv4/opencv2/video/background_segm.hpp \
+ /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/ORBVocabulary.h \
+ /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/DBoW2/DBoW2/FORB.h \
+ /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/DBoW2/DBoW2/FClass.h \
+ /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/DBoW2/DBoW2/TemplatedVocabulary.h \
+ /usr/include/c++/13/fstream \
+ /usr/include/x86_64-linux-gnu/c++/13/bits/basic_file.h \
+ /usr/include/x86_64-linux-gnu/c++/13/bits/c++io.h \
+ /usr/include/c++/13/bits/fstream.tcc \
+ /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/DBoW2/DBoW2/FeatureVector.h \
+ /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/DBoW2/DBoW2/ScoringObject.h \
+ /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/DBoW2/DBoW2/../DUtils/Random.h \
+ /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/Converter.h \
+ /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/g2o/types/types_six_dof_expmap.h \
+ /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/g2o/types/../core/base_binary_edge.h \
+ /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/g2o/types/../core/base_unary_edge.h \
+ /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/g2o/types/se3_ops.h \
+ /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/g2o/types/se3_ops.hpp \
+ /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/g2o/types/se3quat.h \
+ /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/g2o/types/types_sba.h \
+ /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/g2o/types/types_seven_dof_expmap.h \
+ /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/g2o/types/types_six_dof_expmap.h \
+ /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/g2o/types/sim3.h \
+ /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/Sophus/sophus/sim3.hpp \
+ /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/Sophus/sophus/rxso3.hpp \
+ /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/Sophus/sophus/sim_details.hpp \
+ /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/Settings.h \
+ /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/CameraModels/GeometricCamera.h \
+ /usr/include/opencv4/opencv2/imgproc/imgproc.hpp \
+ /usr/include/boost/serialization/export.hpp \
+ /usr/include/boost/serialization/extended_type_info.hpp \
+ /usr/include/c++/13/cstdarg /usr/include/boost/noncopyable.hpp \
+ /usr/include/boost/core/noncopyable.hpp \
+ /usr/include/boost/serialization/config.hpp \
+ /usr/include/boost/config/auto_link.hpp \
+ /usr/include/boost/config/abi_prefix.hpp \
+ /usr/include/boost/config/abi_suffix.hpp \
+ /usr/include/boost/serialization/static_warning.hpp \
+ /usr/include/boost/mpl/print.hpp \
+ /usr/include/boost/serialization/assume_abstract.hpp \
+ /usr/include/boost/type_traits/is_abstract.hpp \
+ /usr/include/boost/serialization/singleton.hpp \
+ /usr/include/boost/archive/detail/auto_link_archive.hpp \
+ /usr/include/boost/archive/detail/decl.hpp \
+ /usr/include/boost/archive/detail/abi_prefix.hpp \
+ /usr/include/boost/archive/detail/abi_suffix.hpp \
+ /usr/include/boost/archive/detail/register_archive.hpp \
+ /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/Converter.h \
+ /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/GeometricTools.h \
  /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/KeyFrame.h \
  /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/MapPoint.h \
  /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/KeyFrame.h \
@@ -1058,9 +1082,7 @@ CMakeFiles/ORB_SLAM3.dir/src/G2oTypes.cc.o: \
  /usr/local/include/pangolin/compat/type_traits.h \
  /usr/local/include/pangolin/windowing/window.h \
  /usr/local/include/pangolin/utils/signal_slot.h \
- /usr/local/include/sigslot/signal.hpp /usr/include/c++/13/thread \
- /usr/include/c++/13/bits/std_thread.h \
- /usr/include/c++/13/bits/this_thread_sleep.h \
+ /usr/local/include/sigslot/signal.hpp \
  /usr/local/include/pangolin/utils/true_false_toggle.h \
  /usr/local/include/pangolin/utils/uri.h \
  /usr/local/include/pangolin/windowing/handler_bitsets.h \
@@ -1116,6 +1138,29 @@ CMakeFiles/ORB_SLAM3.dir/src/G2oTypes.cc.o: \
  /usr/local/include/pangolin/video/video_input.h \
  /usr/local/include/pangolin/video/video_output.h \
  /usr/include/boost/serialization/array.hpp \
+ /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/comm/communicator.hpp \
+ /home/carlos/.local/include/covins/covins_base/communicator_base.hpp \
+ /usr/include/netinet/in.h /usr/include/x86_64-linux-gnu/sys/socket.h \
+ /usr/include/x86_64-linux-gnu/bits/types/struct_iovec.h \
+ /usr/include/x86_64-linux-gnu/bits/socket.h \
+ /usr/include/x86_64-linux-gnu/bits/socket_type.h \
+ /usr/include/x86_64-linux-gnu/bits/sockaddr.h \
+ /usr/include/x86_64-linux-gnu/asm/socket.h \
+ /usr/include/asm-generic/socket.h /usr/include/linux/posix_types.h \
+ /usr/include/linux/stddef.h \
+ /usr/include/x86_64-linux-gnu/asm/posix_types.h \
+ /usr/include/x86_64-linux-gnu/asm/posix_types_64.h \
+ /usr/include/asm-generic/posix_types.h \
+ /usr/include/x86_64-linux-gnu/asm/bitsperlong.h \
+ /usr/include/asm-generic/bitsperlong.h \
+ /usr/include/x86_64-linux-gnu/asm/sockios.h \
+ /usr/include/asm-generic/sockios.h \
+ /usr/include/x86_64-linux-gnu/bits/types/struct_osockaddr.h \
+ /usr/include/x86_64-linux-gnu/bits/socket2.h \
+ /usr/include/x86_64-linux-gnu/bits/in.h \
+ /home/carlos/.local/include/covins/covins_base/config_comm.hpp \
+ /home/carlos/.local/include/covins/covins_base/msgs/msg_keyframe.hpp \
+ /home/carlos/.local/include/covins/covins_base/msgs/msg_landmark.hpp \
  /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/ORBextractor.h \
  /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/KeyFrameDatabase.h \
  /usr/include/boost/serialization/list.hpp \

@@ -57,6 +57,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/ORB_SLAM3.dir/src/TwoViewReconstruction.cc.o.d"
   "CMakeFiles/ORB_SLAM3.dir/src/Viewer.cc.o"
   "CMakeFiles/ORB_SLAM3.dir/src/Viewer.cc.o.d"
+  "CMakeFiles/ORB_SLAM3.dir/src/comm/communicator.cpp.o"
+  "CMakeFiles/ORB_SLAM3.dir/src/comm/communicator.cpp.o.d"
 )
 
 # Per-language clean rules from dependency scanning.

@@ -288,10 +288,14 @@ void LocalMapping::Run()
             if(!this->IsCommInitialized()) {
                 if(mbInertial) {
                     if(mpAtlas->isImuInitialized() && mpAtlas->GetAllKeyFrames().size() >= covins_params::comm::start_sending_after_kf) {
+                        std::cout << "[COMM] LocalMapping: comm init ON at KFs="
+                                  << mpAtlas->GetAllKeyFrames().size() << std::endl;
                         this->SetCommInitialized();
                     }
                 } else {
                     if(mpAtlas->GetAllKeyFrames().size() >= covins_params::comm::start_sending_after_kf) {
+                        std::cout << "[COMM] LocalMapping: comm init ON at KFs="
+                                  << mpAtlas->GetAllKeyFrames().size() << std::endl;
                         this->SetCommInitialized();
                     }
                 }
@@ -299,6 +303,9 @@ void LocalMapping::Run()
                 while(kf_out_buffer_.size() > covins_params::comm::kf_buffer_withold/* || this->CheckFinish()*/) { // delay sending a bit to achieve more consistency in data association
                     KeyFrame* kfi = *(kf_out_buffer_.begin());
                     kf_out_buffer_.erase(kf_out_buffer_.begin());
+                    if(!kfi) continue;
+                    std::cout << "[COMM] LocalMapping -> Comm KF id=" << kfi->mnId
+                              << " lm_buffer_left=" << kf_out_buffer_.size() << std::endl;
                     comm_->PassKfToComm(kfi);
                 }
             }

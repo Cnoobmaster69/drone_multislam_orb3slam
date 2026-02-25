@@ -461,6 +461,20 @@ CMakeFiles/ORB_SLAM3.dir/src/Viewer.cc.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/ORB_SLAM3.dir/src/Viewer.cc.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/carlos/ws_offboard_control/src/ORB_SLAM3/src/Viewer.cc -o CMakeFiles/ORB_SLAM3.dir/src/Viewer.cc.s
 
+CMakeFiles/ORB_SLAM3.dir/src/comm/communicator.cpp.o: CMakeFiles/ORB_SLAM3.dir/flags.make
+CMakeFiles/ORB_SLAM3.dir/src/comm/communicator.cpp.o: /home/carlos/ws_offboard_control/src/ORB_SLAM3/src/comm/communicator.cpp
+CMakeFiles/ORB_SLAM3.dir/src/comm/communicator.cpp.o: CMakeFiles/ORB_SLAM3.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/home/carlos/ws_offboard_control/src/ORB_SLAM3/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_29) "Building CXX object CMakeFiles/ORB_SLAM3.dir/src/comm/communicator.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/ORB_SLAM3.dir/src/comm/communicator.cpp.o -MF CMakeFiles/ORB_SLAM3.dir/src/comm/communicator.cpp.o.d -o CMakeFiles/ORB_SLAM3.dir/src/comm/communicator.cpp.o -c /home/carlos/ws_offboard_control/src/ORB_SLAM3/src/comm/communicator.cpp
+
+CMakeFiles/ORB_SLAM3.dir/src/comm/communicator.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/ORB_SLAM3.dir/src/comm/communicator.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/carlos/ws_offboard_control/src/ORB_SLAM3/src/comm/communicator.cpp > CMakeFiles/ORB_SLAM3.dir/src/comm/communicator.cpp.i
+
+CMakeFiles/ORB_SLAM3.dir/src/comm/communicator.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/ORB_SLAM3.dir/src/comm/communicator.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/carlos/ws_offboard_control/src/ORB_SLAM3/src/comm/communicator.cpp -o CMakeFiles/ORB_SLAM3.dir/src/comm/communicator.cpp.s
+
 # Object files for target ORB_SLAM3
 ORB_SLAM3_OBJECTS = \
 "CMakeFiles/ORB_SLAM3.dir/src/Atlas.cc.o" \
@@ -490,7 +504,8 @@ ORB_SLAM3_OBJECTS = \
 "CMakeFiles/ORB_SLAM3.dir/src/System.cc.o" \
 "CMakeFiles/ORB_SLAM3.dir/src/Tracking.cc.o" \
 "CMakeFiles/ORB_SLAM3.dir/src/TwoViewReconstruction.cc.o" \
-"CMakeFiles/ORB_SLAM3.dir/src/Viewer.cc.o"
+"CMakeFiles/ORB_SLAM3.dir/src/Viewer.cc.o" \
+"CMakeFiles/ORB_SLAM3.dir/src/comm/communicator.cpp.o"
 
 # External object files for target ORB_SLAM3
 ORB_SLAM3_EXTERNAL_OBJECTS =
@@ -523,6 +538,7 @@ ORB_SLAM3_EXTERNAL_OBJECTS =
 /home/carlos/ws_offboard_control/src/ORB_SLAM3/lib/libORB_SLAM3.so: CMakeFiles/ORB_SLAM3.dir/src/Tracking.cc.o
 /home/carlos/ws_offboard_control/src/ORB_SLAM3/lib/libORB_SLAM3.so: CMakeFiles/ORB_SLAM3.dir/src/TwoViewReconstruction.cc.o
 /home/carlos/ws_offboard_control/src/ORB_SLAM3/lib/libORB_SLAM3.so: CMakeFiles/ORB_SLAM3.dir/src/Viewer.cc.o
+/home/carlos/ws_offboard_control/src/ORB_SLAM3/lib/libORB_SLAM3.so: CMakeFiles/ORB_SLAM3.dir/src/comm/communicator.cpp.o
 /home/carlos/ws_offboard_control/src/ORB_SLAM3/lib/libORB_SLAM3.so: CMakeFiles/ORB_SLAM3.dir/build.make
 /home/carlos/ws_offboard_control/src/ORB_SLAM3/lib/libORB_SLAM3.so: /usr/lib/x86_64-linux-gnu/libopencv_stitching.so.4.6.0
 /home/carlos/ws_offboard_control/src/ORB_SLAM3/lib/libORB_SLAM3.so: /usr/lib/x86_64-linux-gnu/libopencv_alphamat.so.4.6.0
@@ -567,6 +583,7 @@ ORB_SLAM3_EXTERNAL_OBJECTS =
 /home/carlos/ws_offboard_control/src/ORB_SLAM3/lib/libORB_SLAM3.so: /usr/local/lib/libpango_video.so.0.9.4
 /home/carlos/ws_offboard_control/src/ORB_SLAM3/lib/libORB_SLAM3.so: /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/DBoW2/lib/libDBoW2.so
 /home/carlos/ws_offboard_control/src/ORB_SLAM3/lib/libORB_SLAM3.so: /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/lib/libg2o.so
+/home/carlos/ws_offboard_control/src/ORB_SLAM3/lib/libORB_SLAM3.so: /home/carlos/.local/lib/libcovins_comm.so
 /home/carlos/ws_offboard_control/src/ORB_SLAM3/lib/libORB_SLAM3.so: /usr/lib/x86_64-linux-gnu/libopencv_highgui.so.4.6.0
 /home/carlos/ws_offboard_control/src/ORB_SLAM3/lib/libORB_SLAM3.so: /usr/lib/x86_64-linux-gnu/libopencv_datasets.so.4.6.0
 /home/carlos/ws_offboard_control/src/ORB_SLAM3/lib/libORB_SLAM3.so: /usr/lib/x86_64-linux-gnu/libopencv_plot.so.4.6.0
@@ -600,7 +617,7 @@ ORB_SLAM3_EXTERNAL_OBJECTS =
 /home/carlos/ws_offboard_control/src/ORB_SLAM3/lib/libORB_SLAM3.so: /usr/local/lib/libpango_packetstream.so.0.9.4
 /home/carlos/ws_offboard_control/src/ORB_SLAM3/lib/libORB_SLAM3.so: /usr/local/lib/libpango_core.so.0.9.4
 /home/carlos/ws_offboard_control/src/ORB_SLAM3/lib/libORB_SLAM3.so: CMakeFiles/ORB_SLAM3.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/carlos/ws_offboard_control/src/ORB_SLAM3/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_29) "Linking CXX shared library /home/carlos/ws_offboard_control/src/ORB_SLAM3/lib/libORB_SLAM3.so"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/carlos/ws_offboard_control/src/ORB_SLAM3/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_30) "Linking CXX shared library /home/carlos/ws_offboard_control/src/ORB_SLAM3/lib/libORB_SLAM3.so"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/ORB_SLAM3.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

@@ -51,7 +51,7 @@ public:
     virtual auto Run()                                                                  ->void;
 
     virtual auto PassKfToComm(KeyFrame* kf)                                             ->void {
-        std::unique_lock<std::mutex>(mtx_kf_queue_);
+        std::unique_lock<std::mutex> lock(mtx_kf_queue_);
         kf_out_buffer_.push_back(kf);
     }
 

@@ -46,6 +46,7 @@ auto KeyFrame::ConvertToMsg(covins::MsgKeyframe &msg, KeyFrame *kf_ref, bool is_
     std::unique_lock<std::mutex> lock_conn(mMutexConnections);
     std::unique_lock<std::mutex> lock_feat(mMutexFeatures);
     std::unique_lock<std::mutex> lock_pose(mMutexPose);
+    const bool use_imu_data = bImu;
 
     if(kf_ref && kf_ref->mnId == mnId) {
         //This will cause a deadlock when calling kf_ref->GetPoseTws();
@@ -60,16 +61,38 @@ auto KeyFrame::ConvertToMsg(covins::MsgKeyframe &msg, KeyFrame *kf_ref, bool is_
     msg.timestamp = mTimeStamp;
     //calibration
     if(!is_update){
-        // Eigen::Matrix4d Tsc = covins::Utils::ToEigenMat44d(mImuCalib.mTbc);
-        Eigen::Matrix4f Tf1 = mImuCalib.mTbc.matrix();
-        Eigen::Matrix4d Tsc = Tf1.cast<double>();
+        Eigen::Matrix4d Tsc = Eigen::Matrix4d::Identity();
+        if(use_imu_data) {
+            Eigen::Matrix4f Tf1 = mImuCalib.mTbc.matrix();
+            Tsc = Tf1.cast<double>();
+        }
         covins::eCamModel cmodel = covins::eCamModel::PINHOLE;
         covins::eDistortionModel dmodel = covins::eDistortionModel::RADTAN;
         Eigen::VectorXd DistCoeffs(4,1);
-        DistCoeffs(0) = mDistCoef.at<float>(0,0);
-        DistCoeffs(1) = mDistCoef.at<float>(0,1);
-        DistCoeffs(2) = mDistCoef.at<float>(0,2);
-        DistCoeffs(3) = mDistCoef.at<float>(0,3);
+        DistCoeffs.setZero();
+        if(mDistCoef.total() >= 4) {
+            cv::Mat dist_row = mDistCoef.reshape(1,1); // flatten regardless of Nx1 or 1xN
+            if(mDistCoef.type() == CV_32F) {
+                const float* d = dist_row.ptr<float>(0);
+                DistCoeffs(0) = d[0];
+                DistCoeffs(1) = d[1];
+                DistCoeffs(2) = d[2];
+                DistCoeffs(3) = d[3];
+            } else if(mDistCoef.type() == CV_64F) {
+                const double* d = dist_row.ptr<double>(0);
+                DistCoeffs(0) = d[0];
+                DistCoeffs(1) = d[1];
+                DistCoeffs(2) = d[2];
+                DistCoeffs(3) = d[3];
+            } else {
+                std::cout << COUTWARN << "KF " << mnId
+                          << ": unexpected mDistCoef type=" << mDistCoef.type()
+                          << ", using zeros" << std::endl;
+            }
+        } else {
+            std::cout << COUTWARN << "KF " << mnId
+                      << ": mDistCoef has less than 4 coeffs, using zeros" << std::endl;
+        }
         if(img_width < 0 || img_height < 0) {
             std::cout << COUTRED("Invalid Image Dims: ") << img_width << "|" << img_height << std::endl;
             return;
@@ -84,18 +107,24 @@ auto KeyFrame::ConvertToMsg(covins::MsgKeyframe &msg, KeyFrame *kf_ref, bool is_
         double dgmax = 0.0;
         // cv::Mat cov = mImuCalib.Cov;
         // cv::Mat cov_walk = mImuCalib.CovWalk;
-        Eigen::Matrix<float,6,6> cov_e = mImuCalib.Cov.toDenseMatrix();
-        cv::Mat cov(6,6,CV_32F);
-        std::memcpy(cov.data, cov_e.data(), 36*sizeof(float));
-        Eigen::Matrix<float,6,6> cov_walk_e = mImuCalib.CovWalk.toDenseMatrix();
-        cv::Mat cov_walk(6,6,CV_32F);
-        std::memcpy(cov_walk.data, cov_walk_e.data(), 36*sizeof(float));
-        double dsigmaac = std::sqrt(cov.at<float>(3,3));
-        double dsigmagc = std::sqrt(cov.at<float>(0,0));
+        double dsigmaac = 0.01;
+        double dsigmagc = 0.01;
         double dsigmaba = 0.0;
         double dsigmabg = 0.0;
-        double dsigmaawc = std::sqrt(cov_walk.at<float>(3,3));
-        double dsigmagwc  = std::sqrt(cov_walk.at<float>(0,0));
+        double dsigmaawc = 0.001;
+        double dsigmagwc  = 0.001;
+        if(use_imu_data) {
+            Eigen::Matrix<float,6,6> cov_e = mImuCalib.Cov.toDenseMatrix();
+            cv::Mat cov(6,6,CV_32F);
+            std::memcpy(cov.data, cov_e.data(), 36*sizeof(float));
+            Eigen::Matrix<float,6,6> cov_walk_e = mImuCalib.CovWalk.toDenseMatrix();
+            cv::Mat cov_walk(6,6,CV_32F);
+            std::memcpy(cov_walk.data, cov_walk_e.data(), 36*sizeof(float));
+            dsigmaac = std::sqrt(cov.at<float>(3,3));
+            dsigmagc = std::sqrt(cov.at<float>(0,0));
+            dsigmaawc = std::sqrt(cov_walk.at<float>(3,3));
+            dsigmagwc = std::sqrt(cov_walk.at<float>(0,0));
+        }
         double dtau = 0.0;
         double dg = IMU::GRAVITY_VALUE;
         Eigen::Vector3d va0 = covins::TypeDefs::Vector3Type::Zero();
@@ -103,11 +132,52 @@ auto KeyFrame::ConvertToMsg(covins::MsgKeyframe &msg, KeyFrame *kf_ref, bool is_
         double dDelayC0toIMU = 0.0;
         double dDelayC1toIMU = 0.0;
 
-        covins::VICalibration covins_calib(Tsc,cmodel,dmodel,DistCoeffs,
-                                           dw,dh,dfx,dfy,dcx,dcy,
-                                           damax,dgmax,dsigmaac,dsigmagc,dsigmaba,dsigmabg,dsigmaawc,dsigmagwc,
-                                           dtau,dg,va0,irate,dDelayC0toIMU,dDelayC1toIMU);
-        msg.calibration = covins_calib;
+        for(int r = 0; r < 4; ++r) {
+            for(int c = 0; c < 4; ++c) {
+                msg.calibration.T_SC(r,c) = Tsc(r,c);
+            }
+        }
+        msg.calibration.cam_model = cmodel;
+        msg.calibration.dist_model = dmodel;
+        msg.calibration.img_dims(0) = dw;
+        msg.calibration.img_dims(1) = dh;
+
+        msg.calibration.dist_coeffs.resize(DistCoeffs.size());
+        for(int i = 0; i < DistCoeffs.size(); ++i) {
+            msg.calibration.dist_coeffs(i) = DistCoeffs(i);
+        }
+
+        msg.calibration.intrinsics.resize(4);
+        msg.calibration.intrinsics(0) = dfx;
+        msg.calibration.intrinsics(1) = dfy;
+        msg.calibration.intrinsics(2) = dcx;
+        msg.calibration.intrinsics(3) = dcy;
+
+        msg.calibration.K(0,0) = dfx;
+        msg.calibration.K(0,1) = 0.0;
+        msg.calibration.K(0,2) = dcx;
+        msg.calibration.K(1,0) = 0.0;
+        msg.calibration.K(1,1) = dfy;
+        msg.calibration.K(1,2) = dcy;
+        msg.calibration.K(2,0) = 0.0;
+        msg.calibration.K(2,1) = 0.0;
+        msg.calibration.K(2,2) = 1.0;
+        msg.calibration.a_max = damax;
+        msg.calibration.g_max = dgmax;
+        msg.calibration.sigma_a_c = dsigmaac;
+        msg.calibration.sigma_g_c = dsigmagc;
+        msg.calibration.sigma_ba = dsigmaba;
+        msg.calibration.sigma_bg = dsigmabg;
+        msg.calibration.sigma_aw_c = dsigmaawc;
+        msg.calibration.sigma_gw_c = dsigmagwc;
+        msg.calibration.tau = dtau;
+        msg.calibration.g = dg;
+        msg.calibration.a0(0) = va0(0);
+        msg.calibration.a0(1) = va0(1);
+        msg.calibration.a0(2) = va0(2);
+        msg.calibration.rate = irate;
+        msg.calibration.delay_cam0_to_imu = dDelayC0toIMU;
+        msg.calibration.delay_cam1_to_imu = dDelayC1toIMU;
     }
 
     if(!is_update){
@@ -120,42 +190,62 @@ auto KeyFrame::ConvertToMsg(covins::MsgKeyframe &msg, KeyFrame *kf_ref, bool is_
     if (!is_update) {
       
         // cv::Mat img = NLeft;
-        const size_t num_keys = mvKeys.size();
         msg.keypoints_aors          = this->keys_eigen_aors_;
         msg.keypoints_distorted     = this->keys_eigen_;
         msg.keypoints_undistorted = this->keys_eigen_un_;
-        
     }
 
     if(!is_update) {
         msg.descriptors = mDescriptors.clone();
     }
 
-    // Eigen::Matrix4d Tws = covins::Utils::ToEigenMat44d(mTwc*mImuCalib.mTcb);
-    Eigen::Matrix4f Tf2 = (mTwc*mImuCalib.mTbc).matrix();
-    Eigen::Matrix4d Tws = Tf2.cast<double>();
+    Eigen::Matrix4d Tws = Eigen::Matrix4d::Identity();
+    if(use_imu_data) {
+        Eigen::Matrix4f Tf2 = (mTwc*mImuCalib.mTbc).matrix();
+        Tws = Tf2.cast<double>();
+    } else {
+        Tws = mTwc.matrix().cast<double>();
+    }
 
-    if(!is_update){
+    if(!is_update && use_imu_data){
         ConvertPreintegrationToMsg(msg.preintegration);
     }
 
-    // msg.T_s_c = covins::Utils::ToEigenMat44d(mImuCalib.mTbc);
-    Eigen::Matrix4f Tf3 = mImuCalib.mTbc.matrix();
-    msg.T_s_c = Tf3.cast<double>();
+    if(use_imu_data) {
+        Eigen::Matrix4f Tf3 = mImuCalib.mTbc.matrix();
+        msg.T_s_c = Tf3.cast<double>();
+    } else {
+        msg.T_s_c = Eigen::Matrix4d::Identity();
+    }
 
-    // covins::TypeDefs::Vector3Type v_in_s = Tws.block<3,3>(0,0).inverse() *  covins::Utils::ToEigenVec3d(mVw);
-    covins::TypeDefs::Vector3Type v_in_s = Tws.block<3,3>(0,0).inverse() *  mVw.cast<double>();
-    msg.velocity = v_in_s;
+    if(use_imu_data) {
+        covins::TypeDefs::Vector3Type v_in_s = Tws.block<3,3>(0,0).inverse() *  mVw.cast<double>();
+        msg.velocity = v_in_s;
+    } else {
+        msg.velocity = covins::TypeDefs::Vector3Type::Zero();
+    }
 
-    msg.bias_accel = Eigen::Vector3d(mImuBias.bax,mImuBias.bay,mImuBias.baz);
-    msg.bias_gyro = Eigen::Vector3d(mImuBias.bwx,mImuBias.bwy,mImuBias.bwz);
-    msg.lin_acc = msg.preintegration.acc;
-    msg.ang_vel = msg.preintegration.gyr;
+    if(use_imu_data) {
+        msg.bias_accel = Eigen::Vector3d(mImuBias.bax,mImuBias.bay,mImuBias.baz);
+        msg.bias_gyro = Eigen::Vector3d(mImuBias.bwx,mImuBias.bwy,mImuBias.bwz);
+        msg.lin_acc = msg.preintegration.acc;
+        msg.ang_vel = msg.preintegration.gyr;
+    } else {
+        msg.bias_accel = Eigen::Vector3d::Zero();
+        msg.bias_gyro = Eigen::Vector3d::Zero();
+        msg.lin_acc = Eigen::Vector3d::Zero();
+        msg.ang_vel = Eigen::Vector3d::Zero();
+    }
 
     covins::TypeDefs::TransformType T_w_sref = covins::TypeDefs::TransformType::Identity();
-    // if(kf_ref) T_w_sref = covins::Utils::ToEigenMat44d((kf_ref->GetImuPose()));
-    Eigen::Matrix4f Tf = kf_ref->GetImuPose().matrix();
-    if(kf_ref) T_w_sref = Tf.cast<double>();
+    if(kf_ref) {
+        if(use_imu_data) {
+            Eigen::Matrix4f Tf = kf_ref->GetImuPose().matrix();
+            T_w_sref = Tf.cast<double>();
+        } else {
+            T_w_sref = kf_ref->GetPoseInverse().matrix().cast<double>();
+        }
+    }
 
     if(!kf_ref && mnId != 0) {
         std::cout << COUTERROR << "KF " << mnId << ": no kf_ref" << std::endl;
@@ -176,10 +266,11 @@ auto KeyFrame::ConvertToMsg(covins::MsgKeyframe &msg, KeyFrame *kf_ref, bool is_
     msg.T_sref_s = T_w_sref.inverse() * Tws;
 
     if(!is_update){
-        const int num_lms = mvpMapPoints.size();
-        for (size_t indx = 0; indx < num_lms; indx++) {
-            const auto lm0 = mvpMapPoints[indx];
-            if(lm0) msg.landmarks[indx] = std::make_pair(lm0->mnId,cliend_id);
+        const size_t num_lms = mvpMapPoints.size();
+        for(size_t indx = 0; indx < num_lms; ++indx) {
+            MapPoint* lm = mvpMapPoints[indx];
+            if(!lm || lm->isBad()) continue;
+            msg.landmarks[indx] = std::make_pair(lm->mnId,cliend_id);
         }
     }
 }
@@ -280,6 +371,10 @@ KeyFrame::KeyFrame(Frame &F, Map *pMap, KeyFrameDatabase *pKFDB):
         keys_eigen_un_.reserve(mvKeys.size());
         for(const auto &i : mvKeys){
             covins::TypeDefs::AorsType aors; //Angle,Octave,Response,Size
+            aors[0] = i.angle;
+            aors[1] = static_cast<float>(i.octave);
+            aors[2] = i.response;
+            aors[3] = i.size;
             keys_eigen_aors_.push_back(aors);
 
             covins::TypeDefs::KeypointType kp_eigen;

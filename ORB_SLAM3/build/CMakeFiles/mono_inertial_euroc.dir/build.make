@@ -168,6 +168,7 @@ mono_inertial_euroc_EXTERNAL_OBJECTS =
 /home/carlos/ws_offboard_control/src/ORB_SLAM3/Examples/Monocular-Inertial/mono_inertial_euroc: /usr/local/lib/libtinyobj.so.0.9.4
 /home/carlos/ws_offboard_control/src/ORB_SLAM3/Examples/Monocular-Inertial/mono_inertial_euroc: /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/DBoW2/lib/libDBoW2.so
 /home/carlos/ws_offboard_control/src/ORB_SLAM3/Examples/Monocular-Inertial/mono_inertial_euroc: /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/lib/libg2o.so
+/home/carlos/ws_offboard_control/src/ORB_SLAM3/Examples/Monocular-Inertial/mono_inertial_euroc: /home/carlos/.local/lib/libcovins_comm.so
 /home/carlos/ws_offboard_control/src/ORB_SLAM3/Examples/Monocular-Inertial/mono_inertial_euroc: CMakeFiles/mono_inertial_euroc.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/carlos/ws_offboard_control/src/ORB_SLAM3/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable /home/carlos/ws_offboard_control/src/ORB_SLAM3/Examples/Monocular-Inertial/mono_inertial_euroc"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/mono_inertial_euroc.dir/link.txt --verbose=$(VERBOSE)

@@ -14,7 +14,7 @@ sys.server_ip: '127.0.0.1' #Manthan CRS
 comm.send_updates: 1 # send updates from server to client
 comm.data_to_client: 0 # send data to the agent
 
-comm.start_sending_after_kf: 50 # start sending KFs when n KFs are present the agent's map
+comm.start_sending_after_kf: 5 # start sending KFs when n KFs are present the agent's map
 comm.kf_buffer_withold: 5 # only send a KF if there are n more recntly created ones
 comm.max_sent_kfs_per_iteration: 2 # max. num. KFs sent per iteration of the communicator
 comm.update_window_size: 5 # send only pose updates for the most n recently created KFs

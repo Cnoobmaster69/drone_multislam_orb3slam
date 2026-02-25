@@ -977,6 +977,31 @@ CMakeFiles/mono_kitti.dir/Examples/Monocular/mono_kitti.cc.o: \
  /usr/include/boost/mpl/aux_/preprocessed/gcc/full_lambda.hpp \
  /usr/include/boost/mpl/aux_/preprocessed/gcc/apply.hpp \
  /usr/include/boost/serialization/collection_traits.hpp \
+ /home/carlos/.local/include/covins/covins_base/typedefs_base.hpp \
+ /usr/include/eigen3/Eigen/Core /usr/include/eigen3/Eigen/Geometry \
+ /usr/include/eigen3/Eigen/StdVector \
+ /usr/include/eigen3/Eigen/src/StlSupport/StdVector.h \
+ /usr/include/eigen3/Eigen/src/StlSupport/details.h \
+ /usr/include/cereal/cereal.hpp /usr/include/c++/13/unordered_set \
+ /usr/include/c++/13/bits/unordered_set.h /usr/include/cereal/macros.hpp \
+ /usr/include/cereal/details/traits.hpp /usr/include/c++/13/typeindex \
+ /usr/include/cereal/access.hpp /usr/include/cereal/specialize.hpp \
+ /usr/include/cereal/details/helpers.hpp \
+ /usr/include/cereal/details/static_object.hpp \
+ /usr/include/cereal/types/base_class.hpp \
+ /usr/include/cereal/details/polymorphic_impl_fwd.hpp \
+ /usr/include/cereal/types/common.hpp \
+ /usr/include/cereal/types/memory.hpp \
+ /usr/include/cereal/types/polymorphic.hpp \
+ /usr/include/cereal/details/util.hpp /usr/include/c++/13/cxxabi.h \
+ /usr/include/x86_64-linux-gnu/c++/13/bits/cxxabi_tweaks.h \
+ /usr/include/cereal/details/polymorphic_impl.hpp \
+ /usr/include/cereal/types/string.hpp /usr/include/c++/13/stack \
+ /usr/include/c++/13/bits/stl_stack.h \
+ /usr/include/cereal/types/utility.hpp \
+ /usr/include/cereal/types/vector.hpp \
+ /usr/include/cereal/types/concepts/pair_associative_container.hpp \
+ /usr/include/cereal/archives/binary.hpp \
  /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/Converter.h \
  /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/g2o/types/types_six_dof_expmap.h \
  /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/g2o/types/../core/base_vertex.h \
@@ -994,12 +1019,9 @@ CMakeFiles/mono_kitti.dir/Examples/Monocular/mono_kitti.cc.o: \
  /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/g2o/types/../core/parameter_container.h \
  /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/g2o/types/../core/jacobian_workspace.h \
  /usr/include/eigen3/Eigen/StdVector \
- /usr/include/eigen3/Eigen/src/StlSupport/StdVector.h \
- /usr/include/eigen3/Eigen/src/StlSupport/details.h \
  /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/g2o/types/../core/../stuff/macros.h \
  /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/g2o/types/../core/creators.h \
- /usr/include/eigen3/Eigen/Cholesky /usr/include/c++/13/stack \
- /usr/include/c++/13/bits/stl_stack.h \
+ /usr/include/eigen3/Eigen/Cholesky \
  /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/g2o/types/../core/base_vertex.hpp \
  /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/g2o/types/../core/base_binary_edge.h \
  /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/g2o/types/../core/base_edge.h \
@@ -1118,13 +1140,34 @@ CMakeFiles/mono_kitti.dir/Examples/Monocular/mono_kitti.cc.o: \
  /usr/local/include/pangolin/video/video_output.h \
  /usr/include/boost/serialization/list.hpp \
  /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/CameraModels/GeometricCamera.h \
+ /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/comm/communicator.hpp \
+ /home/carlos/.local/include/covins/covins_base/communicator_base.hpp \
+ /usr/include/netinet/in.h /usr/include/x86_64-linux-gnu/sys/socket.h \
+ /usr/include/x86_64-linux-gnu/bits/types/struct_iovec.h \
+ /usr/include/x86_64-linux-gnu/bits/socket.h \
+ /usr/include/x86_64-linux-gnu/bits/socket_type.h \
+ /usr/include/x86_64-linux-gnu/bits/sockaddr.h \
+ /usr/include/x86_64-linux-gnu/asm/socket.h \
+ /usr/include/asm-generic/socket.h /usr/include/linux/posix_types.h \
+ /usr/include/linux/stddef.h \
+ /usr/include/x86_64-linux-gnu/asm/posix_types.h \
+ /usr/include/x86_64-linux-gnu/asm/posix_types_64.h \
+ /usr/include/asm-generic/posix_types.h \
+ /usr/include/x86_64-linux-gnu/asm/bitsperlong.h \
+ /usr/include/asm-generic/bitsperlong.h \
+ /usr/include/x86_64-linux-gnu/asm/sockios.h \
+ /usr/include/asm-generic/sockios.h \
+ /usr/include/x86_64-linux-gnu/bits/types/struct_osockaddr.h \
+ /usr/include/x86_64-linux-gnu/bits/socket2.h \
+ /usr/include/x86_64-linux-gnu/bits/in.h \
+ /home/carlos/.local/include/covins/covins_base/config_comm.hpp \
+ /home/carlos/.local/include/covins/covins_base/msgs/msg_keyframe.hpp \
+ /home/carlos/.local/include/covins/covins_base/msgs/msg_landmark.hpp \
  /usr/include/boost/serialization/array.hpp \
  /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/Atlas.h \
  /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/CameraModels/Pinhole.h \
  /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/CameraModels/GeometricCamera.h \
  /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/TwoViewReconstruction.h \
- /usr/include/c++/13/unordered_set \
- /usr/include/c++/13/bits/unordered_set.h \
  /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/CameraModels/KannalaBrandt8.h \
  /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/MapDrawer.h \
  /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/System.h \
@@ -1286,9 +1329,7 @@ CMakeFiles/mono_kitti.dir/Examples/Monocular/mono_kitti.cc.o: \
  /usr/include/boost/function/function_fwd.hpp \
  /usr/include/boost/function_equal.hpp \
  /usr/include/boost/core/typeinfo.hpp \
- /usr/include/boost/core/demangle.hpp /usr/include/c++/13/cxxabi.h \
- /usr/include/x86_64-linux-gnu/c++/13/bits/cxxabi_tweaks.h \
- /usr/include/boost/core/ref.hpp \
+ /usr/include/boost/core/demangle.hpp /usr/include/boost/core/ref.hpp \
  /usr/include/boost/type_traits/has_trivial_copy.hpp \
  /usr/include/boost/type_traits/has_trivial_destructor.hpp \
  /usr/include/boost/type_traits/composite_traits.hpp \

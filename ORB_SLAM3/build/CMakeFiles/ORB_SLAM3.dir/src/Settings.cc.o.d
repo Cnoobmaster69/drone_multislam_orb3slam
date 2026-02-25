@@ -1047,6 +1047,27 @@ CMakeFiles/ORB_SLAM3.dir/src/Settings.cc.o: \
  /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/Frame.h \
  /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/ImuTypes.h \
  /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/SerializationUtils.h \
+ /home/carlos/.local/include/covins/covins_base/typedefs_base.hpp \
+ /usr/include/eigen3/Eigen/Core /usr/include/eigen3/Eigen/Geometry \
+ /usr/include/eigen3/Eigen/StdVector /usr/include/cereal/cereal.hpp \
+ /usr/include/cereal/macros.hpp /usr/include/cereal/details/traits.hpp \
+ /usr/include/c++/13/typeindex /usr/include/cereal/access.hpp \
+ /usr/include/cereal/specialize.hpp \
+ /usr/include/cereal/details/helpers.hpp \
+ /usr/include/cereal/details/static_object.hpp \
+ /usr/include/cereal/types/base_class.hpp \
+ /usr/include/cereal/details/polymorphic_impl_fwd.hpp \
+ /usr/include/cereal/types/common.hpp \
+ /usr/include/cereal/types/memory.hpp \
+ /usr/include/cereal/types/polymorphic.hpp \
+ /usr/include/cereal/details/util.hpp /usr/include/c++/13/cxxabi.h \
+ /usr/include/x86_64-linux-gnu/c++/13/bits/cxxabi_tweaks.h \
+ /usr/include/cereal/details/polymorphic_impl.hpp \
+ /usr/include/cereal/types/string.hpp \
+ /usr/include/cereal/types/utility.hpp \
+ /usr/include/cereal/types/vector.hpp \
+ /usr/include/cereal/types/concepts/pair_associative_container.hpp \
+ /usr/include/cereal/archives/binary.hpp \
  /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/Converter.h \
  /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/Settings.h \
  /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/KeyFrameDatabase.h \
@@ -1126,6 +1147,29 @@ CMakeFiles/ORB_SLAM3.dir/src/Settings.cc.o: \
  /usr/local/include/pangolin/video/video_output.h \
  /usr/include/boost/serialization/list.hpp \
  /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/CameraModels/GeometricCamera.h \
+ /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/comm/communicator.hpp \
+ /home/carlos/.local/include/covins/covins_base/communicator_base.hpp \
+ /usr/include/netinet/in.h /usr/include/x86_64-linux-gnu/sys/socket.h \
+ /usr/include/x86_64-linux-gnu/bits/types/struct_iovec.h \
+ /usr/include/x86_64-linux-gnu/bits/socket.h \
+ /usr/include/x86_64-linux-gnu/bits/socket_type.h \
+ /usr/include/x86_64-linux-gnu/bits/sockaddr.h \
+ /usr/include/x86_64-linux-gnu/asm/socket.h \
+ /usr/include/asm-generic/socket.h /usr/include/linux/posix_types.h \
+ /usr/include/linux/stddef.h \
+ /usr/include/x86_64-linux-gnu/asm/posix_types.h \
+ /usr/include/x86_64-linux-gnu/asm/posix_types_64.h \
+ /usr/include/asm-generic/posix_types.h \
+ /usr/include/x86_64-linux-gnu/asm/bitsperlong.h \
+ /usr/include/asm-generic/bitsperlong.h \
+ /usr/include/x86_64-linux-gnu/asm/sockios.h \
+ /usr/include/asm-generic/sockios.h \
+ /usr/include/x86_64-linux-gnu/bits/types/struct_osockaddr.h \
+ /usr/include/x86_64-linux-gnu/bits/socket2.h \
+ /usr/include/x86_64-linux-gnu/bits/in.h \
+ /home/carlos/.local/include/covins/covins_base/config_comm.hpp \
+ /home/carlos/.local/include/covins/covins_base/msgs/msg_keyframe.hpp \
+ /home/carlos/.local/include/covins/covins_base/msgs/msg_landmark.hpp \
  /usr/include/boost/serialization/array.hpp \
  /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/Atlas.h \
  /home/carlos/ws_offboard_control/src/ORB_SLAM3/include/CameraModels/Pinhole.h \
@@ -1290,9 +1334,7 @@ CMakeFiles/ORB_SLAM3.dir/src/Settings.cc.o: \
  /usr/include/boost/function/function_fwd.hpp \
  /usr/include/boost/function_equal.hpp \
  /usr/include/boost/core/typeinfo.hpp \
- /usr/include/boost/core/demangle.hpp /usr/include/c++/13/cxxabi.h \
- /usr/include/x86_64-linux-gnu/c++/13/bits/cxxabi_tweaks.h \
- /usr/include/boost/core/ref.hpp \
+ /usr/include/boost/core/demangle.hpp /usr/include/boost/core/ref.hpp \
  /usr/include/boost/type_traits/has_trivial_copy.hpp \
  /usr/include/boost/type_traits/has_trivial_destructor.hpp \
  /usr/include/boost/type_traits/composite_traits.hpp \

@@ -40,8 +40,18 @@ Communicator::Communicator(std::string server_ip, std::string port, Atlas* map)
     map_ = map;
 
     std::cout << "--> Connect to server" << std::endl;
-    newfd_ = ConnectToServer(server_ip.c_str(),port);
-    newfd_ = ConnectToServer("127.0.0.1","9033");
+    newfd_ = 2;
+    for(int attempt = 0; attempt < 5 && newfd_ == 2; ++attempt) {
+        newfd_ = ConnectToServer(server_ip.c_str(),port);
+        if(newfd_ == 2) usleep(100000); // 100 ms
+    }
+    if(newfd_ == 2) {
+        std::cout << "[COMM] primary connect failed, retrying 127.0.0.1:9033" << std::endl;
+        for(int attempt = 0; attempt < 5 && newfd_ == 2; ++attempt) {
+            newfd_ = ConnectToServer("127.0.0.1","9033");
+            if(newfd_ == 2) usleep(100000); // 100 ms
+        }
+    }
     if(newfd_ == 2){
         // std::cout << COUTFATAL << ": Could no establish connection - exit" << std::endl;
         // exit(-1);
@@ -57,23 +67,26 @@ auto Communicator::ProcessAdditional()->void {
 }
 
 auto Communicator::ProcessKfBuffer()->void {
-    std::unique_lock<std::mutex>(mtx_kf_queue_);
+    std::unique_lock<std::mutex> lock_kf(mtx_kf_queue_);
     int cnt = 0;
 
     while(!kf_out_buffer_.empty()) {
         auto kfi = kf_out_buffer_.front();
         kf_out_buffer_.pop_front();
+        if(!kfi || kfi->isBad()) continue;
+        const bool was_sent_before = kfi->sent_once_;
         if(kfi->sent_once_ && !covins_params::comm::send_updates) continue;
         if(kfi->sent_once_ && kfi->mnId == 0) continue;
         covins::data_bundle map_chunk;
-        covins::MsgKeyframe msg_kf;
+        map_chunk.keyframes.emplace_back();
+        auto &msg_kf = map_chunk.keyframes.back();
         kfi->ConvertToMsg(msg_kf,kfi->mPrevKF,kfi->sent_once_,client_id_);
         kfi->sent_once_ = true;
-        map_chunk.keyframes.push_back(msg_kf);
-        if(!kfi->sent_once_) cnt++;
+        if(!was_sent_before) cnt++;
         auto kfi_lms = kfi->GetMapPointMatches();
         for(auto lmi : kfi_lms){
             if(!lmi) continue;
+            if(lmi->isBad()) continue;
             if(lmi->sent_once_ && !covins_params::comm::send_updates) continue;
             covins::MsgLandmark msg_lm;
             lmi->ConvertToMsg(msg_lm,kfi,lmi->sent_once_,client_id_);
@@ -126,7 +139,7 @@ auto Communicator::Run()->void {
         }
 
         if(this->ShallFinish()){
-            std::unique_lock<std::mutex>(mtx_kf_queue_);
+            std::unique_lock<std::mutex> lock_kf(mtx_kf_queue_);
             if(!kf_out_buffer_.empty()) {
                 std::cout << "Comm:: waiting for kf_out_buffer_" << std::endl;
             } else {
@@ -134,6 +147,13 @@ auto Communicator::Run()->void {
                 break;
             }
         }
+
+            static int it = 0;
+            if((it++ % 2000) == 0) {
+            std::cout << "[COMM] alive, client_id=" << client_id_
+            << " kf_out=" << kf_out_buffer_.size()
+            << std::endl;
+            }
         usleep(1000);
     }
 

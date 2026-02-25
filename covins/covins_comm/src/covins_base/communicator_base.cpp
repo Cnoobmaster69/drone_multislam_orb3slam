@@ -139,7 +139,10 @@ auto CommunicatorBase::packi32(std::vector<unsigned char> &buf, MsgInfoType &msg
 
 auto CommunicatorBase::PassDataBundle(data_bundle &msg)->void {
     std::unique_lock<std::mutex> lock(mtx_out_);
-    buffer_data_out_.push_back(msg);
+    buffer_data_out_.emplace_back();
+    auto &dst = buffer_data_out_.back();
+    dst.keyframes.swap(msg.keyframes);
+    dst.landmarks.swap(msg.landmarks);
 }
 
 auto CommunicatorBase::ProcessBufferIn()->void {
@@ -187,37 +190,40 @@ auto CommunicatorBase::ProcessBufferIn()->void {
 
 auto CommunicatorBase::ProcessBufferOut()->void {
     std::unique_lock<std::mutex> lock(mtx_out_);
+    if(buffer_data_out_.empty()) {
+        return;
+    }
     while(!buffer_data_out_.empty()){
-        data_bundle db = buffer_data_out_.front();
-        buffer_data_out_.pop_front();
+        data_bundle &db = buffer_data_out_.front();
 
-        for(int i=0;db.keyframes.size();++i){
+        while(!db.keyframes.empty()){
             message_container kf_out_container;
-            MsgKeyframe msg = db.keyframes.front();
-            db.keyframes.pop_front();
+            MsgKeyframe &msg = db.keyframes.front();
             Serialize(msg);
             kf_out_container.ser_msg << send_ser_.str();
             kf_out_container.msg_info.insert(kf_out_container.msg_info.end(), msg.msg_type.begin(), msg.msg_type.end());
             while(kf_out_container.msg_info.size() != ContainerSize*5)
                 kf_out_container.msg_info.push_back(0);
             SendMsgContainer(kf_out_container);
+            db.keyframes.pop_front();
         }
 
         while(!db.landmarks.empty()){
             message_container mp_out_container;
             for(int i = 0; i<ContainerSize; i++){
                 if(!db.landmarks.empty()){
-                    MsgLandmark msg = db.landmarks.front();
-                    db.landmarks.pop_front();
+                    MsgLandmark &msg = db.landmarks.front();
                     Serialize(msg);
                     mp_out_container.ser_msg << send_ser_.str();
                     mp_out_container.msg_info.insert(mp_out_container.msg_info.end(), msg.msg_type.begin(), msg.msg_type.end());
+                    db.landmarks.pop_front();
                 }
             }
             while(mp_out_container.msg_info.size() != ContainerSize*5)
                 mp_out_container.msg_info.push_back(0);
             SendMsgContainer(mp_out_container);
         }
+        buffer_data_out_.pop_front();
     }
 }
 
@@ -355,8 +361,8 @@ auto CommunicatorBase::SendAll(std::stringstream &msg)->int {
 }
 
 auto CommunicatorBase::SendMsgContainer(message_container &msg)->void {
-    const size_t bytes_sent_info = SendAll(msg.msg_info);
-    const size_t bytes_sent_msg = SendAll(msg.ser_msg);
+    SendAll(msg.msg_info);
+    SendAll(msg.ser_msg);
 }
 
 auto CommunicatorBase::Serialize(MsgKeyframe &msg)->void {

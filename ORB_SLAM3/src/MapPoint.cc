@@ -49,7 +49,12 @@ auto MapPoint::ConvertToMsg(covins::MsgLandmark &msg, KeyFrame *kf_ref, bool is_
     msg.id_reference.first = kf_ref->mnId;
     msg.id_reference.second = cliend_id;
 
-    covins::TypeDefs::TransformType T_w_sref = covins::Utils::ToEigenMat44d(kf_ref->GetImuPose());
+    covins::TypeDefs::TransformType T_w_sref = covins::TypeDefs::TransformType::Identity();
+    if(kf_ref->bImu) {
+        T_w_sref = covins::Utils::ToEigenMat44d(kf_ref->GetImuPose());
+    } else {
+        T_w_sref = kf_ref->GetPoseInverse().matrix().cast<double>();
+    }
     covins::TypeDefs::TransformType T_sref_w = T_w_sref.inverse();
     covins::TypeDefs::Matrix3Type R_sref_w = T_sref_w.block<3,3>(0,0);
     covins::TypeDefs::Vector3Type t_sref_w = T_sref_w.block<3,1>(0,3);

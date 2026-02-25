@@ -65,27 +65,27 @@ mapping.kf_culling_max_time_dist: 1.0 #s - max. allowed time distance between 2 
 # activate / deactivate place recognition
 placerec.active: 1
 
-placerec.type: 'COVINS_G' # this allows to integrate other PR algorithms. Currently, only 'COVINS' and 'COVINS_G' is supported
+placerec.type: 'COVINS' # this allows to integrate other PR algorithms. Currently, only 'COVINS' and 'COVINS_G' is supported
 
-placerec.start_after_kf: 7 # map matching skips the first x KFs after map initialization
-placerec.consecutive_loop_dist: 10 # after finding a loop, the next x KFs are not considered loop closure query
+placerec.start_after_kf: 5 # map matching skips the first x KFs after map initialization
+placerec.consecutive_loop_dist: 5 # after finding a loop, the next x KFs are not considered loop closure query
 placerec.min_loop_dist: 100 # minimum number of KFs between the two ends of the loop to accept loop
-placerec.cov_consistency_thres: 3
-placerec.matches_thres: 25
-placerec.matches_thres_merge: 25
+placerec.cov_consistency_thres: 2
+placerec.matches_thres: 18
+placerec.matches_thres_merge: 15
 
-placerec.exclude_kfs_with_id_less_than: 7
-placerec.inter_map_matches_only: 0
+placerec.exclude_kfs_with_id_less_than: 5
+placerec.inter_map_matches_only: 1
 
 # (COVINS)
-placerec.inliers_thres: 20
-placerec.total_matches_thres: 40
+placerec.inliers_thres: 12
+placerec.total_matches_thres: 25
 
 # (COVINS) RANSAC Parameters
 placerec.ransac.min_inliers: 6 #def 6
 placerec.ransac.probability: 0.99
-placerec.ransac.max_iterations: 300
-placerec.ransac.class_threshold: 25 #def:25 - threshold for inlier classification
+placerec.ransac.max_iterations: 500
+placerec.ransac.class_threshold: 35 #def:25 - threshold for inlier classification
 
 # (COVINS_G) Parameters for 17 PT (non_central_rel_pose)
 placerec.nc_rel_pose.rp_error: 1.5 # Reprojection Error in Pixels for solving 17PT

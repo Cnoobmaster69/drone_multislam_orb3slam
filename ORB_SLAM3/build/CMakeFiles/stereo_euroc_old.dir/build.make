@@ -168,6 +168,7 @@ stereo_euroc_old_EXTERNAL_OBJECTS =
 /home/carlos/ws_offboard_control/src/ORB_SLAM3/Examples_old/Stereo/stereo_euroc_old: /usr/local/lib/libtinyobj.so.0.9.4
 /home/carlos/ws_offboard_control/src/ORB_SLAM3/Examples_old/Stereo/stereo_euroc_old: /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/DBoW2/lib/libDBoW2.so
 /home/carlos/ws_offboard_control/src/ORB_SLAM3/Examples_old/Stereo/stereo_euroc_old: /home/carlos/ws_offboard_control/src/ORB_SLAM3/Thirdparty/g2o/lib/libg2o.so
+/home/carlos/ws_offboard_control/src/ORB_SLAM3/Examples_old/Stereo/stereo_euroc_old: /home/carlos/.local/lib/libcovins_comm.so
 /home/carlos/ws_offboard_control/src/ORB_SLAM3/Examples_old/Stereo/stereo_euroc_old: CMakeFiles/stereo_euroc_old.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/home/carlos/ws_offboard_control/src/ORB_SLAM3/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable /home/carlos/ws_offboard_control/src/ORB_SLAM3/Examples_old/Stereo/stereo_euroc_old"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/stereo_euroc_old.dir/link.txt --verbose=$(VERBOSE)
