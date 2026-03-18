@@ -24,6 +24,6 @@ ORB_SLAM3_RGBD_ROS2:
 
     visualization: false
     odometry_mode: false
-    publish_tf: true
+    publish_tf:  false
     map_data_publish_frequency: 1000 # publish every 1000.0 milliseconds
     do_loop_closing: true

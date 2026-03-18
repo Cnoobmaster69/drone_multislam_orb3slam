@@ -6,37 +6,37 @@
 #   direction: GZ_TO_ROS
 
 # -------- RGB camera (IMX214) --------
-- ros_topic_name: "uav_1/rgb/image_raw"
+- ros_topic_name: "uav_3/rgb/image_raw"
   gz_topic_name: "/world/forest/model/x500_depth_1/link/camera_link/sensor/IMX214/image"
   ros_type_name: "sensor_msgs/msg/Image"
   gz_type_name: "gz.msgs.Image"
   direction: GZ_TO_ROS
 
-# - ros_topic_name: "/rgb/camera_info"
-#   gz_topic_name: "/world/forest/model/x500_depth_1/link/camera_link/sensor/IMX214/camera_info"
-#   ros_type_name: "sensor_msgs/msg/CameraInfo"
-#   gz_type_name: "gz.msgs.CameraInfo"
-#   direction: GZ_TO_ROS
+- ros_topic_name: "uav_3/rgb/camera_info"
+  gz_topic_name: "/world/forest/model/x500_depth_1/link/camera_link/sensor/IMX214/camera_info"
+  ros_type_name: "sensor_msgs/msg/CameraInfo"
+  gz_type_name: "gz.msgs.CameraInfo"
+  direction: GZ_TO_ROS
 
 # -------- Depth camera (StereoOV7251) --------
-- ros_topic_name: "uav_1/depth/image"
+- ros_topic_name: "uav_3/depth/image"
   gz_topic_name: "/world/forest/model/x500_depth_1/link/camera_link/sensor/StereoOV7251/depth_image"
   ros_type_name: "sensor_msgs/msg/Image"
   gz_type_name: "gz.msgs.Image"
   direction: GZ_TO_ROS
 
-# - ros_topic_name: "/depth/camera_info"
-#   gz_topic_name: "/world/forest/model/x500_depth_1/link/camera_link/sensor/StereoOV7251/camera_info"
-#   ros_type_name: "sensor_msgs/msg/CameraInfo"
-#   gz_type_name: "gz.msgs.CameraInfo"
-#   direction: GZ_TO_ROS
+- ros_topic_name: "uav_3/depth/camera_info"
+  gz_topic_name: "/world/forest/model/x500_depth_1/link/camera_link/sensor/StereoOV7251/camera_info"
+  ros_type_name: "sensor_msgs/msg/CameraInfo"
+  gz_type_name: "gz.msgs.CameraInfo"
+  direction: GZ_TO_ROS
 
-# # PointCloud
-# - ros_topic_name: "/depth/points"
-#   gz_topic_name: "/world/forest/model/x500_depth_1/link/camera_link/sensor/StereoOV7251/depth_image/points"
-#   ros_type_name: "sensor_msgs/msg/PointCloud2"
-#   gz_type_name: "gz.msgs.PointCloudPacked"
-#   direction: GZ_TO_ROS
+# PointCloud
+- ros_topic_name: "uav_3/depth/points"
+  gz_topic_name: "/world/forest/model/x500_depth_1/link/camera_link/sensor/StereoOV7251/depth_image/points"
+  ros_type_name: "sensor_msgs/msg/PointCloud2"
+  gz_type_name: "gz.msgs.PointCloudPacked"
+  direction: GZ_TO_ROS
 
 # # -------- IMU --------
 # - ros_topic_name: "/x500_depth_1/imu"
@@ -46,35 +46,35 @@
 #   direction: GZ_TO_ROS
 
 
-# -------- RGB camera (IMX214) uav2 --------
-- ros_topic_name: "uav_2/rgb/image_raw"
-  gz_topic_name: "/world/forest/model/x500_depth_2/link/camera_link/sensor/IMX214/image"
-  ros_type_name: "sensor_msgs/msg/Image"
-  gz_type_name: "gz.msgs.Image"
-  direction: GZ_TO_ROS
+# # -------- RGB camera (IMX214) uav2 --------
+# - ros_topic_name: "uav_2/rgb/image_raw"
+#   gz_topic_name: "/world/forest/model/x500_depth_2/link/camera_link/sensor/IMX214/image"
+#   ros_type_name: "sensor_msgs/msg/Image"
+#   gz_type_name: "gz.msgs.Image"
+#   direction: GZ_TO_ROS
 
-# - ros_topic_name: "/rgb/camera_info"
+# - ros_topic_name: "uav_2/rgb/camera_info"
 #   gz_topic_name: "/world/forest/model/x500_depth_2/link/camera_link/sensor/IMX214/camera_info"
 #   ros_type_name: "sensor_msgs/msg/CameraInfo"
 #   gz_type_name: "gz.msgs.CameraInfo"
 #   direction: GZ_TO_ROS
 
-# -------- Depth camera (StereoOV7251) --------
-- ros_topic_name: "uav_2/depth/image"
-  gz_topic_name: "/world/forest/model/x500_depth_2/link/camera_link/sensor/StereoOV7251/depth_image"
-  ros_type_name: "sensor_msgs/msg/Image"
-  gz_type_name: "gz.msgs.Image"
-  direction: GZ_TO_ROS
+# # -------- Depth camera (StereoOV7251) --------
+# - ros_topic_name: "uav_2/depth/image"
+#   gz_topic_name: "/world/forest/model/x500_depth_2/link/camera_link/sensor/StereoOV7251/depth_image"
+#   ros_type_name: "sensor_msgs/msg/Image"
+#   gz_type_name: "gz.msgs.Image"
+#   direction: GZ_TO_ROS
 
-# - ros_topic_name: "/depth/camera_info"
-#   gz_topic_name: "/world/forest/model/x500_depth_1/link/camera_link/sensor/StereoOV7251/camera_info"
+# - ros_topic_name: "uav_2/depth/camera_info"
+#   gz_topic_name: "/world/forest/model/x500_depth_2/link/camera_link/sensor/StereoOV7251/camera_info"
 #   ros_type_name: "sensor_msgs/msg/CameraInfo"
 #   gz_type_name: "gz.msgs.CameraInfo"
 #   direction: GZ_TO_ROS
 
 # # PointCloud
-# - ros_topic_name: "/depth/points"
-#   gz_topic_name: "/world/forest/model/x500_depth_1/link/camera_link/sensor/StereoOV7251/depth_image/points"
+# - ros_topic_name: "uav_2/depth/points"
+#   gz_topic_name: "/world/forest/model/x500_depth_2/link/camera_link/sensor/StereoOV7251/depth_image/points"
 #   ros_type_name: "sensor_msgs/msg/PointCloud2"
 #   gz_type_name: "gz.msgs.PointCloudPacked"
 #   direction: GZ_TO_ROS

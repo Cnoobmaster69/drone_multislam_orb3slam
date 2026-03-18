@@ -29,6 +29,9 @@
 
 // Thirdparty
 #include <ros/ros.h>
+#include <unordered_map>
+#include <memory>
+#include <tf2_ros/transform_broadcaster.h>
 
 namespace covins {
 
@@ -55,6 +58,10 @@ protected:
     virtual auto PubLandmarksAsCloud()                                                  ->void;
     virtual auto PubLoopEdges()                                                         ->void;
     virtual auto PubTrajectories()                                                      ->void;
+    virtual auto PubAgentPoses()                                                        ->void;
+
+    std::unordered_map<size_t, ros::Publisher> pub_agent_pose_;
+    std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 };
 
 } //end ns

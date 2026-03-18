@@ -26,6 +26,7 @@
 // C++
 #include <set>
 #include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Geometry>
 
 // COVINS
 #include "covins_backend/landmark_be.hpp"
@@ -34,13 +35,15 @@
 // Thirdparty
 #include <pcl/point_cloud.h>
 #include <pcl_conversions/pcl_conversions.h>
+#include <geometry_msgs/PoseStamped.h>
+#include <geometry_msgs/TransformStamped.h>
 
 namespace covins {
 
 Visualizer::Visualizer(std::string topic_prefix)
     : VisualizerBase(topic_prefix)
 {
-    //...
+    tf_broadcaster_.reset(new tf2_ros::TransformBroadcaster());
 }
 
 auto Visualizer::DrawMap(MapPtr map)->void {
@@ -399,6 +402,60 @@ auto Visualizer::PubTrajectories()->void {
     }
 }
 
+auto Visualizer::PubAgentPoses()->void {
+    std::map<size_t, KeyframePtr> latest_kf_per_agent;
+
+    for (KeyframeMap::iterator mit = curr_bundle_.keyframes.begin(); mit != curr_bundle_.keyframes.end(); ++mit) {
+        KeyframePtr kf = mit->second;
+        if (!kf || kf->IsInvalid()) continue;
+
+        const size_t cid = kf->id_.second;
+        if (!latest_kf_per_agent.count(cid) || kf->id_.first > latest_kf_per_agent[cid]->id_.first) {
+            latest_kf_per_agent[cid] = kf;
+        }
+    }
+
+    for (std::map<size_t, KeyframePtr>::iterator mit = latest_kf_per_agent.begin();
+         mit != latest_kf_per_agent.end(); ++mit) {
+        const size_t cid = mit->first;
+        KeyframePtr kf = mit->second;
+        const size_t agent_label = cid + 1;
+
+        if (!pub_agent_pose_.count(cid)) {
+            std::stringstream ss;
+            ss << "covins_agent_" << agent_label << "_pose" << topic_prefix_;
+            pub_agent_pose_[cid] = nh_.advertise<geometry_msgs::PoseStamped>(ss.str(), 10);
+        }
+
+        Eigen::Matrix4d Tws = kf->GetPoseTws();
+        Eigen::Matrix3d Rws = Tws.block<3,3>(0,0);
+        Eigen::Quaterniond qws(Rws);
+
+        geometry_msgs::PoseStamped pose_msg;
+        pose_msg.header.frame_id = curr_bundle_.frame;
+        pose_msg.header.stamp = ros::Time::now();
+        pose_msg.pose.position.x = Tws(0,3);
+        pose_msg.pose.position.y = Tws(1,3);
+        pose_msg.pose.position.z = Tws(2,3);
+        pose_msg.pose.orientation.x = qws.x();
+        pose_msg.pose.orientation.y = qws.y();
+        pose_msg.pose.orientation.z = qws.z();
+        pose_msg.pose.orientation.w = qws.w();
+
+        pub_agent_pose_[cid].publish(pose_msg);
+
+        geometry_msgs::TransformStamped tf_msg;
+        tf_msg.header.stamp = pose_msg.header.stamp;
+        tf_msg.header.frame_id = "world";
+        tf_msg.child_frame_id = "uav_" + std::to_string(agent_label) + "/base_link";
+        tf_msg.transform.translation.x = pose_msg.pose.position.x;
+        tf_msg.transform.translation.y = pose_msg.pose.position.y;
+        tf_msg.transform.translation.z = pose_msg.pose.position.z;
+        tf_msg.transform.rotation = pose_msg.pose.orientation;
+        tf_broadcaster_->sendTransform(tf_msg);
+    }
+}
+
 auto Visualizer::PubLoopEdges()->void {
     if(curr_bundle_.keyframes.empty()){
         std::cout << COUTWARN << "no KFs on VisBundle" << std::endl;
@@ -484,6 +541,8 @@ auto Visualizer::Run()->void {
 
                 if(covins_params::vis::showlandmarks)
                     this->PubLandmarksAsCloud();
+
+                this->PubAgentPoses();
 
                 if(covins_params::vis::showcovgraph)
                     this->PubCovGraph();

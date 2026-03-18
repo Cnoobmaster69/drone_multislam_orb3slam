@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>orb_slam3_map_gen</name>
+  <name>orb_slam3_map_generator</name>
   <version>1.0.0</version>
   <description>Map Generator for ORB_SLAM3 library</description>
   <maintainer email="rssuchetan@gmail.com">Suchetan Saravanan</maintainer>

@@ -21,15 +21,17 @@
 #include <memory>
 #include <mutex>
 #include <unordered_map>
+#include <algorithm>
+#include <cmath>
 
 class DepthPointcloudStitcher : public rclcpp::Node
 {
 public:
     DepthPointcloudStitcher()
         : Node("orb_slam3_pointcloud_stitcher"),
-          buffer_duration_(3.0),
           tf_buffer_(this->get_clock()),
           tf_listener_(tf_buffer_),
+          buffer_duration_(3.0),
           pointcloud_frame_id_(nullptr),
           robot_base_frame_id_("base_link")
     {
@@ -37,6 +39,7 @@ public:
         callback_group_pc_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
         callback_group_map_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
         callback_group_service_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+        callback_group_diag_ = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
 
         // Setup subscription options for each callback group
         rclcpp::SubscriptionOptions pc_sub_options;
@@ -48,26 +51,50 @@ public:
         this->declare_parameter("depth_pointcloud_topic", "lidar/points");
         std::string pc_topic;
         this->get_parameter("depth_pointcloud_topic", pc_topic);
+        depth_pointcloud_topic_ = pc_topic;
+        this->declare_parameter("map_data_topic", "map_data");
+        std::string map_data_topic;
+        this->get_parameter("map_data_topic", map_data_topic);
+        this->declare_parameter("output_global_pointcloud_topic", "global_pointcloud");
+        std::string output_global_pointcloud_topic;
+        this->get_parameter("output_global_pointcloud_topic", output_global_pointcloud_topic);
 
         this->declare_parameter("input_pointcloud_rate", 10.0);
         this->get_parameter("input_pointcloud_rate", input_pointcloud_rate_);
+        this->declare_parameter("max_pose_cloud_time_diff_sec", 0.35);
+        this->get_parameter("max_pose_cloud_time_diff_sec", max_pose_cloud_time_diff_sec_);
+        this->declare_parameter("use_normalized_time_diff", false);
+        this->get_parameter("use_normalized_time_diff", use_normalized_time_diff_);
+        this->declare_parameter("input_reliable_qos", true);
+        this->get_parameter("input_reliable_qos", input_reliable_qos_);
 
         this->declare_parameter("robot_base_frame", "base_footprint");
         this->get_parameter("robot_base_frame", robot_base_frame_id_);
+        robot_base_frame_id_ = resolveFrameId(robot_base_frame_id_);
 
         // 1) Subscribers
+        auto pc_qos = rclcpp::QoS(rclcpp::KeepLast(10));
+        if (input_reliable_qos_)
+        {
+            pc_qos.reliable();
+        }
+        else
+        {
+            pc_qos.best_effort();
+        }
         pc_sub_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(
             pc_topic,
-            rclcpp::QoS(rclcpp::KeepLast(10)).reliable().durability_volatile(),
+            pc_qos,
             std::bind(&DepthPointcloudStitcher::pointCloudCallback, this, std::placeholders::_1), pc_sub_options);
 
         map_graph_sub_ = this->create_subscription<slam_msgs::msg::MapData>(
-            "x500_depth_1/map_data",
+            map_data_topic,
             10,
             std::bind(&DepthPointcloudStitcher::MapDataCallback, this, std::placeholders::_1), map_sub_options);
 
-        // 2) Publisher for the final global pointcloud
-        global_pc_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("global_pointcloud", 1);
+        // 2) Publisher for the final global pointcloud (latched/transient for RViz consumers)
+        auto global_qos = rclcpp::QoS(rclcpp::KeepLast(1)).reliable().transient_local();
+        global_pc_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(output_global_pointcloud_topic, global_qos);
 
         // 3) Service for triggering processing and publishing
         process_service_ = this->create_service<slam_msgs::srv::GetGlobalPointCloud>(
@@ -76,13 +103,49 @@ public:
                       std::placeholders::_1, std::placeholders::_2));
 
         RCLCPP_INFO(this->get_logger(), "DepthPointcloudStitcher node started.");
+        RCLCPP_INFO(this->get_logger(), "depth_pointcloud_topic: %s", pc_topic.c_str());
+        RCLCPP_INFO(this->get_logger(), "resolved_depth_pointcloud_subscription: %s",
+                    pc_sub_->get_topic_name());
+        RCLCPP_INFO(this->get_logger(), "map_data_topic: %s", map_data_topic.c_str());
+        RCLCPP_INFO(this->get_logger(), "output_global_pointcloud_topic: %s", output_global_pointcloud_topic.c_str());
+        RCLCPP_INFO(this->get_logger(), "input pointcloud QoS reliability: %s",
+                    input_reliable_qos_ ? "reliable" : "best_effort");
+        RCLCPP_INFO(this->get_logger(), "time_matching_mode: %s",
+                    use_normalized_time_diff_ ? "normalized" : "absolute");
+        RCLCPP_INFO(this->get_logger(), "max_pose_cloud_time_diff_sec: %.3f",
+                    max_pose_cloud_time_diff_sec_);
+
+        diag_timer_ = this->create_wall_timer(
+            std::chrono::seconds(10),
+            [this]() {
+                if (!received_any_pointcloud_)
+                {
+                    RCLCPP_WARN(this->get_logger(),
+                                "Still waiting first pointcloud on '%s' (publishers=%zu)",
+                                depth_pointcloud_topic_.c_str(),
+                                pc_sub_->get_publisher_count());
+                }
+                if (!received_any_map_data_)
+                {
+                    RCLCPP_WARN(this->get_logger(),
+                                "Still waiting MapData on '%s' (publishers=%zu)",
+                                map_graph_sub_->get_topic_name(),
+                                map_graph_sub_->get_publisher_count());
+                }
+            },
+            callback_group_diag_);
     }
 
 private:
     // Depth camera pointcloud subscriber
     void pointCloudCallback(const sensor_msgs::msg::PointCloud2::SharedPtr msg)
     {
-        // RCLCPP_INFO_STREAM(this->get_logger(), "Received pointcloud");
+        if (!received_any_pointcloud_) {
+            received_any_pointcloud_ = true;
+            RCLCPP_INFO(this->get_logger(),
+                        "First pointcloud received on %s, frame_id=%s",
+                        depth_pointcloud_topic_.c_str(), msg->header.frame_id.c_str());
+        }
         buffer_mutex_.lock();
         pointcloud_buffer_.push_back(msg);
         if (pointcloud_frame_id_ == nullptr)
@@ -111,6 +174,8 @@ private:
     void MapDataCallback(const slam_msgs::msg::MapData::SharedPtr msg)
     {
         std::lock_guard<std::mutex> lock(global_pcl_mutex_);
+        received_any_map_data_ = true;
+        latest_map_pose_count_ = msg->graph.poses_id.size();
         if (msg->graph.poses_id.size() != msg->graph.poses.size())
         {
             RCLCPP_ERROR(this->get_logger(),
@@ -118,7 +183,7 @@ private:
             return;
         }
 
-        RCLCPP_WARN_STREAM(this->get_logger(), "Map data: " << msg->graph.poses_id.size());
+        RCLCPP_DEBUG_STREAM(this->get_logger(), "Map data poses: " << msg->graph.poses_id.size());
 
         // Match each pose to the closest pointcloud in time
         for (size_t i = 0; i < msg->graph.poses_id.size(); ++i)
@@ -128,6 +193,11 @@ private:
             auto pose_only = msg->graph.poses[i].pose;
             stored_poses_[pose_id] = pose_only;
             rclcpp::Time pose_time(pose_stamp);
+            if (!has_pose_time_origin_)
+            {
+                pose_time_origin_ = pose_time;
+                has_pose_time_origin_ = true;
+            }
             if (stored_pose_clouds_.find(pose_id) != stored_pose_clouds_.end())
                 continue;
 
@@ -135,10 +205,15 @@ private:
             std::shared_ptr<sensor_msgs::msg::PointCloud2> best_match = nullptr;
 
             buffer_mutex_.lock();
+            if (!pointcloud_buffer_.empty() && !has_cloud_time_origin_)
+            {
+                cloud_time_origin_ = rclcpp::Time(pointcloud_buffer_.front()->header.stamp);
+                has_cloud_time_origin_ = true;
+            }
             for (auto pc : pointcloud_buffer_)
             {
                 rclcpp::Time pc_time(pc->header.stamp);
-                double diff = std::abs((pc_time - pose_time).seconds());
+                double diff = poseCloudTimeDiffSec(pc_time, pose_time);
                 if (diff < best_time_diff)
                 {
                     best_time_diff = diff;
@@ -147,12 +222,17 @@ private:
             }
             buffer_mutex_.unlock();
 
-            if (best_match && std::find(discarded_pose_ids_.begin(), discarded_pose_ids_.end(), pose_id) == discarded_pose_ids_.end())
+            if (best_match)
             {
-                if (best_time_diff > 1.0 / input_pointcloud_rate_ * 2.0)
+                if (best_time_diff > max_pose_cloud_time_diff_sec_)
                 {
-                    RCLCPP_ERROR_STREAM(this->get_logger(), "pose_id: " << pose_id << " || BEST MATCH PCL HAS A VERY HIGH TIMESTAMP DIFF: " << best_time_diff);
-                    discarded_pose_ids_.push_back(pose_id);
+                    // Expected for old keyframes when map history is longer than cloud buffer.
+                    RCLCPP_DEBUG_STREAM(this->get_logger(),
+                                        "pose_id: " << pose_id
+                                                   << " best matched cloud too far in "
+                                                   << (use_normalized_time_diff_ ? "normalized" : "absolute")
+                                                   << " time: " << best_time_diff << " sec (thresh="
+                                                   << max_pose_cloud_time_diff_sec_ << ")");
                     continue;
                 }
                 stored_pose_clouds_[pose_id] = best_match;
@@ -183,7 +263,23 @@ private:
         RCLCPP_INFO(this->get_logger(), "Processing stored clouds...");
         if (pointcloud_frame_id_ == nullptr)
         {
-            RCLCPP_ERROR(this->get_logger(), "Pointcloud frame id null. Cannot process this call.");
+            RCLCPP_ERROR(this->get_logger(),
+                         "Pointcloud frame id null. No pointcloud received yet on topic '%s'. Cannot process this call.",
+                         depth_pointcloud_topic_.c_str());
+            response->response = false;
+            return;
+        }
+
+        if (stored_pose_clouds_.empty())
+        {
+            size_t buffered_clouds = 0;
+            {
+                std::lock_guard<std::mutex> lock_buffer(buffer_mutex_);
+                buffered_clouds = pointcloud_buffer_.size();
+            }
+            RCLCPP_WARN(this->get_logger(),
+                        "No pose-cloud matches available yet. Trigger rejected. map_poses=%zu buffered_clouds=%zu",
+                        latest_map_pose_count_, buffered_clouds);
             response->response = false;
             return;
         }
@@ -250,7 +346,7 @@ private:
                 if (!std::isfinite(pt.x) || !std::isfinite(pt.y) || !std::isfinite(pt.z))
                     continue;
 
-                if (pt.z > max_z)
+                if (max_z > 0.0f && pt.z > max_z)
                     continue;
 
                 Eigen::Vector3d p_in(pt.x, pt.y, pt.z);
@@ -296,6 +392,13 @@ private:
         RCLCPP_INFO(this->get_logger(), "Published accumulated global map cloud with %lu points.",
                     global_map_filtered.size());
 
+        if (global_map_filtered.empty())
+        {
+            RCLCPP_WARN(this->get_logger(), "Global map cloud is empty after filtering.");
+            response->response = false;
+            return;
+        }
+
         response->response = true;
     }
 
@@ -322,6 +425,27 @@ private:
         return transform;
     }
 
+    double normalizedTimeDiffSec(const rclcpp::Time &pc_time, const rclcpp::Time &pose_time) const
+    {
+        if (has_pose_time_origin_ && has_cloud_time_origin_)
+        {
+            const double pose_rel = (pose_time - pose_time_origin_).seconds();
+            const double cloud_rel = (pc_time - cloud_time_origin_).seconds();
+            return cloud_rel - pose_rel;
+        }
+        // Fallback while origins are not available yet.
+        return (pc_time - pose_time).seconds();
+    }
+
+    double poseCloudTimeDiffSec(const rclcpp::Time &pc_time, const rclcpp::Time &pose_time) const
+    {
+        if (use_normalized_time_diff_)
+        {
+            return std::abs(normalizedTimeDiffSec(pc_time, pose_time));
+        }
+        return std::abs((pc_time - pose_time).seconds());
+    }
+
     /******************************************
      * Members
      ******************************************/
@@ -345,19 +469,41 @@ private:
     std::mutex buffer_mutex_;
     double buffer_duration_;
     double input_pointcloud_rate_;
+    double max_pose_cloud_time_diff_sec_;
+    bool use_normalized_time_diff_;
+    bool input_reliable_qos_;
     std::shared_ptr<std::string> pointcloud_frame_id_;
     std::string robot_base_frame_id_;
+    std::string depth_pointcloud_topic_;
+    bool received_any_pointcloud_ = false;
+    bool received_any_map_data_ = false;
+    size_t latest_map_pose_count_ = 0;
+    bool has_pose_time_origin_ = false;
+    bool has_cloud_time_origin_ = false;
+    rclcpp::Time pose_time_origin_{0, 0, RCL_ROS_TIME};
+    rclcpp::Time cloud_time_origin_{0, 0, RCL_ROS_TIME};
 
     // For each matched pose-cloud pair, store the Pose as well
     std::unordered_map<int32_t, std::shared_ptr<sensor_msgs::msg::PointCloud2>> stored_pose_clouds_; // (pose_id, PC)
     std::unordered_map<int32_t, geometry_msgs::msg::Pose> stored_poses_;                             // Matching geometry_msgs::Pose
     std::mutex global_pcl_mutex_;                                                                    // protects stored_point_clouds_
-    std::vector<int32_t> discarded_pose_ids_; // For debugging, store the pose ids
-
     // Callback groups
     rclcpp::CallbackGroup::SharedPtr callback_group_pc_;
     rclcpp::CallbackGroup::SharedPtr callback_group_map_;
     rclcpp::CallbackGroup::SharedPtr callback_group_service_;
+    rclcpp::CallbackGroup::SharedPtr callback_group_diag_;
+    rclcpp::TimerBase::SharedPtr diag_timer_;
+
+    std::string resolveFrameId(const std::string &frame_id_in)
+    {
+        if (frame_id_in.empty()) return frame_id_in;
+        if (frame_id_in.find('/') != std::string::npos) return frame_id_in;
+
+        std::string ns = this->get_namespace(); // e.g. "/uav_1"
+        ns.erase(std::remove(ns.begin(), ns.end(), '/'), ns.end());
+        if (ns.empty()) return frame_id_in;
+        return ns + "/" + frame_id_in;
+    }
 };
 
 // Main

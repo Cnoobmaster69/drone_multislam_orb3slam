@@ -32,9 +32,14 @@ def generate_launch_description():
         'ag_n',
         default_value='0',
         description='Agent index for multi-agent runs (used to auto-build namespace when needed)')
+    publish_tf = LaunchConfiguration('publish_tf')
+    publish_tf_arg = DeclareLaunchArgument(
+        'publish_tf',
+        default_value='false',
+        description='Whether orb_slam3_ros2_wrapper publishes map->odom/base TF')
 #---------------------------------------------
 
-    def all_nodes_launch(context, robot_namespace, ag_n):
+    def all_nodes_launch(context, robot_namespace, ag_n, publish_tf):
         params_file = LaunchConfiguration('params_file')
         vocabulary_file_path = "/home/carlos/ws_offboard_control/src/ORB_SLAM3/Vocabulary/ORBvoc.txt"
         # config_file_path = "/home/carlos/ws_offboard_control/src/orb_slam3_ros2_wrapper/params/orb_slam3_params/euroc_stereo.yaml"
@@ -65,6 +70,7 @@ def generate_launch_description():
             'depth_image_topic_name': f'/{namespace_value}/depth/image',
             'robot_base_frame': f'{namespace_value}/base_link',
             'odom_frame': f'{namespace_value}/odom',
+            'publish_tf': publish_tf.perform(context),
         }
 
 
@@ -85,12 +91,13 @@ def generate_launch_description():
         
         return [declare_params_file_cmd, orb_slam3_node]
 
-    opaque_function = OpaqueFunction(function=all_nodes_launch, args=[robot_namespace, ag_n])
+    opaque_function = OpaqueFunction(function=all_nodes_launch, args=[robot_namespace, ag_n, publish_tf])
 #---------------------------------------------
 
     return LaunchDescription([
         declare_use_sim_time_cmd,
         robot_namespace_arg,
         ag_n_arg,
+        publish_tf_arg,
         opaque_function
     ])

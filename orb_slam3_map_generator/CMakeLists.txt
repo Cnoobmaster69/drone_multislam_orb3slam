@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(orb_slam3_map_gen)
+project(orb_slam3_map_generator)
 
 IF(NOT CMAKE_BUILD_TYPE)
   SET(CMAKE_BUILD_TYPE Release)
@@ -80,6 +80,11 @@ add_executable(get_landmarks_simulator src/get_landmarks_simulator.cpp)
 ament_target_dependencies(get_landmarks_simulator ${dependencies})
 target_link_libraries(get_landmarks_simulator ${PCL_LIBRARIES})
 install(TARGETS get_landmarks_simulator DESTINATION lib/${PROJECT_NAME})
+
+install(PROGRAMS
+  scripts/stitch_pcl_client.py
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 install(DIRECTORY launch param
 DESTINATION share/${PROJECT_NAME}

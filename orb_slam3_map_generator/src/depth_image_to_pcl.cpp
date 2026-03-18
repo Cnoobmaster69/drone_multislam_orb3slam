@@ -6,6 +6,8 @@
 #include <image_transport/image_transport.hpp>
 #include <cv_bridge/cv_bridge.hpp>
 #include <opencv2/opencv.hpp>
+#include <algorithm>
+#include <rmw/qos_profiles.h>
 
 // For message_filters Synchronizer
 #include <message_filters/subscriber.h>
@@ -20,32 +22,50 @@ class ColoredPointCloudNode : public rclcpp::Node
 {
 public:
     ColoredPointCloudNode()
-        : Node("colored_pointcloud_node")
+        : Node("colored_pointcloud_node"), rgb_info_received_(false), depth_info_received_(false)
     {
         this->declare_parameter<std::string>("rgb_image_topic", "rgb_camera");
         this->declare_parameter<std::string>("depth_image_topic", "depth_camera");
         this->declare_parameter<std::string>("rgb_info_topic", "rgb_camera/camera_info");
         this->declare_parameter<std::string>("depth_info_topic", "camera_info");
+        this->declare_parameter<std::string>("output_pointcloud_topic", "camera/colored_pointcloud");
+        this->declare_parameter<std::string>("output_frame_id", "camera_link");
+        this->declare_parameter<double>("sync_max_interval_sec", 1.0);
+        this->declare_parameter<bool>("output_reliable_qos", true);
         
         // Get parameter values.
         std::string rgb_image_topic;
         std::string depth_image_topic;
         std::string rgb_info_topic;
         std::string depth_info_topic;
+        std::string output_pointcloud_topic;
+        std::string output_frame_id;
+        double sync_max_interval_sec = 1.0;
+        bool output_reliable_qos = true;
         this->get_parameter("rgb_image_topic", rgb_image_topic);
         this->get_parameter("depth_image_topic", depth_image_topic);
         this->get_parameter("rgb_info_topic", rgb_info_topic);
         this->get_parameter("depth_info_topic", depth_info_topic);
+        this->get_parameter("output_pointcloud_topic", output_pointcloud_topic);
+        this->get_parameter("output_frame_id", output_frame_id);
+        this->get_parameter("sync_max_interval_sec", sync_max_interval_sec);
+        this->get_parameter("output_reliable_qos", output_reliable_qos);
+        output_frame_id_ = resolveFrameId(output_frame_id);
 
         RCLCPP_INFO_STREAM(this->get_logger(), "RGB image topic: " << rgb_image_topic);
         RCLCPP_INFO_STREAM(this->get_logger(), "Depth image topic: " << depth_image_topic);
         RCLCPP_INFO_STREAM(this->get_logger(), "RGB info topic: " << rgb_info_topic);
         RCLCPP_INFO_STREAM(this->get_logger(), "Depth info topic: " << depth_info_topic);
+        RCLCPP_INFO_STREAM(this->get_logger(), "Output pointcloud topic: " << output_pointcloud_topic);
+        RCLCPP_INFO_STREAM(this->get_logger(), "Output frame id: " << output_frame_id_);
+        RCLCPP_INFO_STREAM(this->get_logger(), "Output pointcloud QoS reliability: "
+                                               << (output_reliable_qos ? "reliable" : "best_effort"));
         RCLCPP_INFO(this->get_logger(), "=================================");
 
-        // Set up subscribers using message_filters
-        rgb_image_sub_.subscribe(this, rgb_image_topic);
-        depth_image_sub_.subscribe(this, depth_image_topic);
+        // Set up subscribers using message_filters with sensor-data QoS.
+        // This avoids reliability mismatches with Gazebo/bridge image publishers.
+        rgb_image_sub_.subscribe(this, rgb_image_topic, rmw_qos_profile_sensor_data);
+        depth_image_sub_.subscribe(this, depth_image_topic, rmw_qos_profile_sensor_data);
 
         rgb_info_sub_ = this->create_subscription<sensor_msgs::msg::CameraInfo>(
             rgb_info_topic, 10,
@@ -61,7 +81,11 @@ public:
             SyncPolicy;
 
         sync_ = std::make_shared<message_filters::Synchronizer<SyncPolicy>>(
-            SyncPolicy(10), rgb_image_sub_, depth_image_sub_);
+            SyncPolicy(50), rgb_image_sub_, depth_image_sub_);
+        if (sync_max_interval_sec > 0.0)
+        {
+            sync_->setMaxIntervalDuration(rclcpp::Duration::from_seconds(sync_max_interval_sec));
+        }
 
         // Register the synchronized callback
         sync_->registerCallback(
@@ -69,8 +93,17 @@ public:
                       std::placeholders::_1, std::placeholders::_2));
 
         // Publisher for PointCloud2
+        auto cloud_qos = rclcpp::QoS(rclcpp::KeepLast(5));
+        if (output_reliable_qos)
+        {
+            cloud_qos.reliable();
+        }
+        else
+        {
+            cloud_qos.best_effort();
+        }
         pointcloud_pub_ = this->create_publisher<sensor_msgs::msg::PointCloud2>(
-            "/camera/colored_pointcloud", 10);
+            output_pointcloud_topic, cloud_qos);
     }
 
 private:
@@ -105,6 +138,10 @@ private:
     {
         if (!rgb_info_received_ || !depth_info_received_)
             return;
+        if (!received_synced_pair_) {
+            received_synced_pair_ = true;
+            RCLCPP_INFO(this->get_logger(), "First synchronized RGB+Depth pair received.");
+        }
         // Convert ROS image messages to OpenCV images
         cv::Mat rgb_image, depth_image;
         try
@@ -134,6 +171,7 @@ private:
         // Prepare PointCloud2 message
         sensor_msgs::msg::PointCloud2 cloud_msg;
         cloud_msg.header = rgb_msg->header;
+        cloud_msg.header.frame_id = output_frame_id_;
         cloud_msg.height = depth_image.rows;
         cloud_msg.width = depth_image.cols;
         cloud_msg.is_bigendian = false;
@@ -223,6 +261,13 @@ private:
         }
 
         pointcloud_pub_->publish(cloud_msg);
+        if (published_cloud_count_ == 0)
+        {
+            RCLCPP_INFO(this->get_logger(),
+                        "First colored pointcloud published on %s",
+                        pointcloud_pub_->get_topic_name());
+        }
+        ++published_cloud_count_;
     }
 
     // Subscribers
@@ -248,6 +293,20 @@ private:
     // Store camera intrinsics from the callback
     std::array<double, 9> rgb_k_;
     std::array<double, 9> depth_k_;
+    std::string output_frame_id_;
+    bool received_synced_pair_ = false;
+    uint64_t published_cloud_count_ = 0;
+
+    std::string resolveFrameId(const std::string &frame_id_in)
+    {
+        if (frame_id_in.empty()) return frame_id_in;
+        if (frame_id_in.find('/') != std::string::npos) return frame_id_in;
+
+        std::string ns = this->get_namespace(); // e.g. "/uav_1"
+        ns.erase(std::remove(ns.begin(), ns.end(), '/'), ns.end());
+        if (ns.empty()) return frame_id_in;
+        return ns + "/" + frame_id_in;
+    }
 };
 
 int main(int argc, char **argv)
