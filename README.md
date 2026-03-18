@@ -1,158 +1,162 @@
-# Multi-SLAM (ORB-SLAM3) with 2 PX4 Drones in Gazebo + ROS 2
+# Multi-Drone SLAM Integration (WIP)
 
-This repository documents a multi-drone setup (2 PX4 SITL instances) in Gazebo (gz) integrated with ROS 2 to:
+<p align="center">
+  <img src="media/vslam_one_drone.png" alt="ORB_SLAM3 RGBD Tracking with one drone" width="45%">
+  <img src="media/two_drones_trajectory.png" alt="COVINS trayectory and pointcloud Visualization for two drones" width="50%">
+  <img src="media/three_drone_covins_map.gif" alt="Visualization with three drones using COVINS" width="80%">
+</p>
 
-- Simulate 2 PX4 SITL drones with sensors (Stereo or RGB-D).
-- Bridge Gazebo ↔ ROS 2 using `ros_gz_bridge`.
-- Run ORB-SLAM3 via the `orb_slam3_ros2_wrapper` (inside Docker) for tracking and mapping.
-- Send offboard commands to the drones using `px4_ros_com` while ORB-SLAM3 runs.
-- Connect with COVINS and build a combined map using information from both drones (currently working).
+Integration of **ORB-SLAM3 + COVINS + PX4 + Gazebo + ROS 2** for collaborative localization and mapping with multiple `x500_depth` drones in Gazebo Forest world.
 
----
+Current status:
+- Per-agent RGB-D SLAM with `orb_slam3_ros2_wrapper`.
+- Multi-agent CSLAM with COVINS (backend running in ROS 1 Docker).
+- Trajectories and global map visible in RViz (COVINS backend).
+- Per-agent dense cloud generation with `orb_slam3_map_generator` (still unstable).
+- PX4 `offboard_control` node available (autonomous exploration still under development).
 
-## 1) Requirements & Context
 
-Base software components used by this project:
+## Architecture Summary
 
-- PX4 Autopilot with Gazebo (gz) simulation support. The simulation relies on environment variables such as `PX4_SIM_MODEL` and other options to spawn multiple instances.
-- ROS 2 (the same distro you use in your workspace).
-- MicroXRCEAgent for the Micro XRCE-DDS bridge (used by PX4 for DDS/ROS 2 communication). The agent runs as a separate process.
-- `ros_gz_bridge` to bridge topics between Gazebo and ROS 2.
-- A fixed `ROS_DOMAIN_ID` (important).
+1. **Simulation**: PX4 SITL (multiple instances) in Gazebo.
+2. **Gazebo -> ROS 2 Bridge**: `ros_gz_bridge` publishes per-drone RGB-D streams.
+3. **SLAM Frontend**: `orb_slam3_ros2_wrapper` processes RGB-D per agent.
+4. **CSLAM Backend**: COVINS in ROS 1 Docker receives keyframes/landmarks.
+5. **Visualization**: RViz in Docker shows trajectories, global map, and loop closures.
+6. **Control**: `px4_ros_com` provides offboard control while SLAM is running.
 
-We use a fixed ROS domain to isolate this project's DDS/ROS2 network and avoid interference with other DDS participants on the same machine or network. ROS 2 documents the use of `ROS_DOMAIN_ID` and its impact on discovery and DDS ports.
+## Repository Structure
 
-In this project:
-```
-export ROS_DOMAIN_ID=55
-```
+- `multi_slam`: custom integration package (launch files, bridge config, static TFs).
+- `orb_slam3_ros2_wrapper`: ROS 2 ORB-SLAM3 wrapper with COVINS/multi-agent changes.
+- `orb_slam3_map_generator`: dense cloud generation from local map data.
+- `covins`: CSLAM backend (ROS 1) with adjustments for this workflow.
+- `px4_ros_com`, `px4_msgs`, `ORB_SLAM3`, `slam_msgs`, etc.: third-party dependencies used by this integration.
 
-Recommendation: add that line to your `~/.bashrc` if you always work with this stack.
+Licenses and attributions: see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
----
+## Current Runtime Workflow
 
-## 2) ROS 2 dependencies for PX4 (local workspace)
+### 0) Setup (ROS 2 host)
 
-This setup assumes you already followed the standard PX4 ↔ ROS 2 integration tutorial and have a built workspace (via `colcon`) containing the typical PX4-ROS 2 packages, including:
-
-- `px4_ros_com`
-- `px4_msgs`
-
-These packages enable running examples and nodes for offboard control in ROS 2.
-
----
-
-## 3) ORB-SLAM3 Wrapper (Docker + ROS 2)
-
-We use the following repository/container for running ORB-SLAM3 with a ROS 2 wrapper:
-
-- `suchetanrs/ORB-SLAM3-ROS2-Docker`
-
-Typical workflow for that wrapper:
-
-- clone the repository (and its submodules)
-- install Docker
-- build the Docker image
-- run the container and launch the ROS 2 `launch` files provided by the wrapper
-
-Local changes made so far:
-- YAML parameter files for the wrapper (e.g. `params/ros_params/*`, such as `euroc_ros_params.yaml`) were modified to rename camera topics and match the topics published by `ros_gz_bridge`.
-- Specifically, the wrapper's `stereo.launch.py` subscribes to:
-  - `/cam_0/image`
-  - `/cam_1/image`
-
-Note: those topics come from the bridge configuration file `gz_bridge_stereo.yaml`.
-
----
-
-## 4) Initial build (before running)
-
-4.1 Local ROS 2 workspace
-
-From your workspace:
 ```bash
 cd ~/ws_offboard_control
 colcon build
 source install/setup.bash
-```
-
-4.2 ORB-SLAM3 Docker wrapper
-
-Follow the build and run instructions in the `suchetanrs/ORB-SLAM3-ROS2-Docker` repository to build the image and start the container.
-
----
-
-## 5) Runtime routine (commands)
-
-All ROS 2 commands must run with the same `ROS_DOMAIN_ID=55`.
-
-5.0 Export the Domain ID (in every terminal)
-```bash
 export ROS_DOMAIN_ID=55
 ```
 
-5.1 Launch PX4 SITL instance 1 (drone 1)
+### 1) COVINS Backend (ROS Melodic Docker)
+
+Build the Docker image from this repository using `covins/docker` (including your local modifications):
+
+```bash
+cd ~/ws_offboard_control/src/covins/docker
+make build NR_JOBS=8
+```
+
+Then run inside the container:
+
+```bash
+roscore
+rosrun covins_backend covins_backend_node
+```
+
+You can also use `covins/docker/run.sh` to launch roscore/backend.
+
+### 2) PX4 + Gazebo Simulation (2 drones)
 
 Terminal 1:
 ```bash
 cd ~/PX4-Autopilot
-source venv/px4/bin/activate   # if applicable for your installation
+source venv/px4/bin/activate
 PX4_SYS_AUTOSTART=4001 PX4_SIM_MODEL=gz_x500_depth ./build/px4_sitl_default/bin/px4 -i 1
 ```
-
-`PX4_SIM_MODEL` defines the model that Gazebo spawns and associates with that PX4 instance.
-
-5.2 Launch PX4 SITL instance 2 (drone 2)
 
 Terminal 2:
 ```bash
 cd ~/PX4-Autopilot
-source venv/px4/bin/activate   # if applicable
+source venv/px4/bin/activate
 PX4_GZ_STANDALONE=1 PX4_SYS_AUTOSTART=4001 PX4_GZ_MODEL_POSE="0,1" PX4_SIM_MODEL=gz_x500_depth ./build/px4_sitl_default/bin/px4 -i 2
 ```
 
-Notes:
-- The PX4 docs describe the role of variables like `PX4_SIM_MODEL` and how they affect instance spawn/bind.
-- `PX4_GZ_STANDALONE=1` is commonly used when running multiple instances or when a separate Gazebo server is already present (see PX4 docs/discussions for exact flows).
+### 3) Micro XRCE Agent (optional at current stage)
 
-5.3 Micro XRCE Agent (for PX4 ↔ DDS/ROS 2)
-
-Terminal 3:
 ```bash
 MicroXRCEAgent udp4 -p 8888
 ```
 
-5.4 Bridge Gazebo ↔ ROS 2 (camera topics, etc.)
+### 4) Gazebo -> ROS 2 Bridge
 
-Terminal 4:
 ```bash
 cd ~/ws_offboard_control
 source install/setup.bash
-ros2 run ros_gz_bridge parameter_bridge --ros-args -p config_file:=/home/carlos/ws_offboard_control/src/multi_slam/config/gz_bridge_stereo.yaml -p use_sim_time:=true
+ros2 run ros_gz_bridge parameter_bridge --ros-args \
+  -p config_file:=/home/carlos/ws_offboard_control/src/multi_slam/config/gz_bridge.yaml \
+  -p use_sim_time:=true
 ```
 
-This bridge publishes (among others) the topics ORB-SLAM3 needs (for example `/cam_0/image` and `/cam_1/image`).
+Important: update `multi_slam/config/gz_bridge.yaml` so topic names match your active agent namespaces.
 
-5.5 Launch ORB-SLAM3 wrapper (stereo tracking)
+### 5) ORB-SLAM3 Frontend per agent
 
-Terminal 5 (inside the environment where the wrapper runs, e.g., inside the Docker container):
+Agent 0 (automatic namespace `uav_1`):
 ```bash
-ros2 launch orb_slam3_ros2_wrapper stereo.launch.py
+ros2 launch orb_slam3_ros2_wrapper rgbd.launch.py ag_n:=0
 ```
 
-This launch runs ORB-SLAM3 tracking and subscribes to:
-- `/cam_0/image`
-- `/cam_1/image`
+Agent 1 (automatic namespace `uav_2`):
+```bash
+ros2 launch orb_slam3_ros2_wrapper rgbd.launch.py ag_n:=1
+```
 
-5.6 Offboard control (send waypoints while SLAM runs)
+The launch file uses `ag_n` to build namespaces (`ag_n=0 -> uav_1`, `ag_n=1 -> uav_2`) and subscribes per agent to:
+- `/uav_X/rgb/image_raw`
+- `/uav_X/depth/image`
 
-Terminal 6:
+### 6) COVINS Visualization (inside Docker)
+
+Once the backend receives enough keyframes (controlled by `comm.start_sending_after_kf` in `covins/covins_comm/config/config_comm.yaml`), run:
+
+```bash
+rviz -d ~/covins_ws/src/covins/covins_backend/config/covins.rviz
+```
+
+### 7) Local one-agent bringup (shortcut)
+
+If Gazebo and PX4 are already running:
+
+```bash
+ros2 launch multi_slam bringup.launch.py robot_namespace:=uav_1
+```
+
+This bringup launches bridge, `ros1_bridge`, static frames, and ORB-SLAM3 RGB-D.
+
+### 8) Offboard control (exploration algorithm not integrated yet)
+
 ```bash
 cd ~/ws_offboard_control
 source install/setup.bash
 ros2 run px4_ros_com offboard_control
 ```
 
-This node allows sending offboard/waypoint commands to the drone while SLAM is running.
+## Project Status
 
----
+Completed:
+- ORB-SLAM3 RGB-D integration with PX4 drone camera data in Gazebo.
+- COVINS backend integration (ROS 1 Docker) with ROS 2 frontend.
+- Multi-agent support in wrapper launch files.
+- Global map and per-agent trajectory visualization.
+
+In progress:
+- Bridging COVINS pose/TF from ROS 1 to ROS 2 per agent.
+- Improving dense cloud robustness in `orb_slam3_map_generator`.
+- 2D projection/occupancy representation and a simple multi-drone exploration algorithm.
+
+## Base References
+
+- ORB-SLAM3: https://github.com/UZ-SLAMLab/ORB_SLAM3
+- COVINS: https://github.com/VIS4ROB-lab/covins
+- PX4 ROS 2 (`px4_ros_com`, `px4_msgs`): https://github.com/PX4
+
+This repository primarily documents the **system integration and adaptations** for a multi-drone scenario.

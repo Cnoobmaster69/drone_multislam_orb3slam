@@ -2,3 +2,6 @@
 
 /ORB-SLAM3-ROS2-Docker
 /ORB_SLAM3/Vocabulary/ORBvoc.txt
+/build
+/install
+/log

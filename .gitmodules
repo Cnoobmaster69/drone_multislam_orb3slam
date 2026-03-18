@@ -1,0 +1,3 @@
+[submodule "ros-jazzy-ros1-bridge-builder"]
+	path = ros-jazzy-ros1-bridge-builder
+	url = https://github.com/TommyChangUMD/ros-jazzy-ros1-bridge-builder.git
